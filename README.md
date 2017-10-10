@@ -18,14 +18,14 @@ Start fdisk to partition the SD card:
   fdisk /dev/sdX
 ```
 At the fdisk prompt, delete old partitions and create a new one:
-.a Type o. This will clear out any partitions on the drive.
-.b Type p to list partitions. There should be no partitions left.
-.c Type n, then p for primary, 1 for the first partition on the drive, press ENTER to accept the default first sector, then type +100M for the last sector.
-.d Type t, then c to set the first partition to type W95 FAT32 (LBA).
-.e Type n, then p for primary, 2 for the second partition on the drive, press ENTER to accept the default first sector, then type +4G for the last sector.
-.f Type n, then p for primary, 3 for the second partition on the drive, press ENTER to accept the default first sector, then type +4G for the last sector.
-.g Type n, then p for primary, 4 for the second partition on the drive, and then press ENTER twice to accept the default first and last sector.
-.h Write the partition table and exit by typing w.
+⋅⋅a Type o. This will clear out any partitions on the drive.
+⋅⋅b Type p to list partitions. There should be no partitions left.
+⋅⋅c Type n, then p for primary, 1 for the first partition on the drive, press ENTER to accept the default first sector, then type +100M for the last sector.
+⋅⋅d Type t, then c to set the first partition to type W95 FAT32 (LBA).
+⋅⋅e Type n, then p for primary, 2 for the second partition on the drive, press ENTER to accept the default first sector, then type +4G for the last sector.
+⋅⋅f Type n, then p for primary, 3 for the second partition on the drive, press ENTER to accept the default first sector, then type +4G for the last sector.
+⋅⋅g Type n, then p for primary, 4 for the second partition on the drive, and then press ENTER twice to accept the default first and last sector.
+⋅⋅h Write the partition table and exit by typing w.
 
 Create and mount the FAT filesystem:
 
