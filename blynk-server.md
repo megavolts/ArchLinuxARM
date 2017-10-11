@@ -71,8 +71,54 @@ All server output is stored in folder '/mnt/data/blynk/logs' file.
 ```
 
 ### 1.4 Create service to start at boot
+Create a blynk service:
+```
+cd /usr/lib/systemd/system/
+wget https://raw.githubusercontent.com/megavolts/ArchRouter/master/ressources/blynk/blynk.service
+```
+And download the script to /usr/blynk/ to handle 
+```
+cd /usr/bin
+wget https://raw.githubusercontent.com/megavolts/ArchRouter/master/ressources/blynk/blynk
+chmod +x blynk
+```
+Rename the blynk server file simply server.jar
+```
+mv /opt/blynk/server-X.X.X-java8.jar /opt/blynk/server.jar
+```
+Start the service and check the journal by issuing
+```
+systemctl start blynk
+systemctl status blynk
+```
+If everythink looks good
+```
+systemctl enable blynk
+```
 
+### 1.5 Using tmpfs to store RRD databases
 
+Install anyting-sync-daemon to reduce read/write on the sd card
+```
+packer -S anything-sync-daemon
+````
+Configure anything-sync-daemon:
+```
+nano -w /etc/asd.conf
+```
+Add to WHATTOSYN accordingly:
+```
+WHATTOSYNC=(..., 'var/log/blynk') 
+```
+Start the service and check the journal by issuing
+```
+systemctl start asd
+systemctl status asd
+```
+If everythink looks good
+```
+systemctl enable asd
+```
 
 ## Source:
 * [blynk github](https://github.com/blynkkk/blynk-server)
