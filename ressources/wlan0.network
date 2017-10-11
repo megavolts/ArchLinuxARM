@@ -1,0 +1,12 @@
+# /etc/systemd/network/wlan0.network
+[Match]
+Name=wlan0
+
+[Network]
+#dhcp=no
+#bridge config
+Bridge=br0
+
+#[Address]
+# no bridge config
+#Address=192.168.1.1/24
