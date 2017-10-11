@@ -1,4 +1,4 @@
-# /usr/lib/systemd/scripts/blynk.service
+# /usr/lib/systemd/system/blynk.service
 
 [Unit]
 Description=Start Blynk Server
