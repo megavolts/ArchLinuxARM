@@ -1,6 +1,8 @@
 # ArchRouter
 Router/Access Point installation on a Raspeberry Pi
 
+eth0 MAC b8:27:eb:01:bd:78 
+
 - hostpadd
 - blynk server
 - monitorix
@@ -71,3 +73,58 @@ Login as the default user alarm with the password alarm.
 The default root password is root.
 
 ## 1. Configuration
+Within the same wired network, get the IP address from the MAC:
+```
+    sudo arp-scan -q -l --interface enp0s25 | grep b8:27:eb:01:bd:78
+```
+The command return XXX.XXX.XXX.XXX  b8:27:eb:01:bd:78
+
+Log via ssh to IP
+```
+    ssh alarm@XXX.XXX.XXX.XXX 
+```
+Enter root
+```
+    su
+```
+
+### 1.0 Change root passowrd
+```
+    passwd
+```
+Enter new root password
+
+### 1.1 Update system and keyring
+Install random  number generator and archlinux-keyring
+```
+    pacman -S haveged archlinux-keyring
+```
+Initiate keyring with palliating the low-entropy issue
+```
+        haveged -w 1024
+        pacman-key --init
+        pkill haveged
+        pacman-key --populate archlinux
+```
+Update the whole system
+```
+    pacman -Syu
+```
+
+### 1.2 Configuration
+Install zsh and set it as default for root
+```
+    pacman -S grml-zsh-config
+    chsh -s $(which zsh)
+```
+Logout and login to change the shell
+
+Change console font
+```
+    echo 'FONT=Lat2-Terminus16' > /etc/vconsole.conf
+```
+Enable only two virtual console
+    echo 'NautoVTS=2' >> /etc/systemd/logind.conf
+
+
+
