@@ -88,11 +88,41 @@ Enter root
     su
 ```
 
-### 1.0 Change root passowrd
+### 1.0 Improve security
+#### Change password and user
+Change the root password
 ```
     passwd
 ```
-Enter new root password
+Creat a new user (megavolts) and delete default user alarm
+```
+    useradd -m -g users -G wheel,locate,network -s /bin/bash megavotls
+    userdel alarm
+```
+Creating a new passowrd for megavolts
+```
+    passwd megavolts
+```
+Enter the passward twice
+
+#### SSH config
+Modifying ssh config
+```
+    nano -w /etc/ssh/sshd_config
+```
+1. Changin port ```Port 1354```
+2. Adding ```Protocol 2```
+3. Forbidding root login ```PermitRootLogin no```
+
+Restart ssh config
+```
+    systemctl daemon-reload
+```
+Login as megavolts and enter root
+```
+    ssh megavolts@137.229.94.166 -p 1354
+    su
+```
 
 ### 1.1 Update system and keyring
 Install random  number generator and archlinux-keyring
@@ -124,6 +154,94 @@ Change console font
     echo 'FONT=Lat2-Terminus16' > /etc/vconsole.conf
 ```
 Enable only two virtual console
-```echo 'NautoVTS=2' >> /etc/systemd/logind.conf```
+```
+    echo 'NautoVTS=2' >> /etc/systemd/logind.conf
+```
+Change hostname
+```
+    echo kiska > /etc/hostname
+```
+And modify hosts file
+```
+    nano -w /etc/hosts
+```
+Add kiska after localhost.
 
+Disable ipv6 by
+1. Modifying the hosts file:
+   ```
+          nano -w /etc/hosts
+   ```
+   And commenting out ```#::1 ...```
+2. Disabling ipv6 in ```/etc/sysctl.d/ipv6.conf```
+   ```
+       echo 'net.ipv6.conf.all.disable_ipv6=1' > /etc/sysctl.d/ipv6.conf
+       echo 'net.ipv6.conf.eth0.disable_ipv6=1' >> /etc/sysctl.d/ipv6.conf
+       echo 'net.ipv6.conf.wlan0.disable_ipv6=1' >> /etc/sysctl.d/ipv6.conf
+    ```
+
+### 1.3 Install essential package:
+``` 
+    pacman -S mlocate ntp
+    updatedb
+```
+
+### 1.4 Configuring i2c
+Add the following line into ```/boot/config.txt```
+```
+    device_tree=bcm2708-rpi-b.dtb
+    device_tree_param=i2c1=on
+    device_tree_param=spi=on
+```
+
+### 1.5 Read-only root and boot
+Adjust ```/etc/fstab```
+```
+    nano -w /etc/fstab
+```
+Add the following lines up to the ```#end``` and comment the first line
+```
+#/dev/mmcblk0p1  /boot           vfat    defaults        0       0
+/dev/mmcblk0p1  /boot   vfat    defaults,ro,errors=remount-ro        0       0
+tmpfs   /var/log    tmpfs   nodev,nosuid    0   0
+tmpfs   /var/tmp    tmpfs   nodev,nosuid    0   0
+#end
+```
+Adjust journald service to not log the system log to prevent flooding of the /var/log folder
+```
+    nano /etc/systemd/journald.conf
+```
+Uncomment and set "Storage=none"
+
+Set root partition as read-only
+```
+    nano /boot/cmdline.txt
+```
+Replace the "rw" flag with the "ro" flag after the "root=" parameter
+
+Disable systemd services
+```
+    systemctl disable systemd-random-seed
+```
+Create shortcut shell scripts to re-enable read-write temporarily if needed
+```
+    printf "mount -o remount,rw /\nmount -o remount,rw /boot" > /bin/writeenable
+    printf "mount -o remount,ro /\nmount -o remount,ro /boot" > /bin/readonly
+    chmod +x /bin/writeenable
+    chmod +x /bin/readonly
+```
+
+Reboot, log and enter root
+
+## 2 Time and RTC module
+### 2.1 Update timezone:
+```
+    timedatectl set-timezone America/Anchorage
+    ntpd -qg
+    timedatectl status
+```
+
+### 2.2 Install
+Check presence of RTC module
+```
 
