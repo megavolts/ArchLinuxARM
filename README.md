@@ -12,6 +12,7 @@ Write-access to home/tmp/var
 ## 0. ArchLinux Installation on SD Card
 Source: https://archlinuxarm.org/platforms/armv6/raspberry-pi
 Replace mmcblkX in the following instructions with the device name for the SD card as it appears on your computer.
+
 ### 0.1 Create filesystem
 Start fdisk to partition the SD card:
 ```
@@ -46,9 +47,10 @@ Create home anda data
     mkfs.ext4 /dev/mmcblkpXs4
 ```
 
-## 0.2 Install ArchLinux system
+### 0.2 Install ArchLinux system
 Download and extract the root filesystem (as root, not via sudo):
-```    wget http://os.archlinuxarm.org/os/ArchLinuxARM-rpi-latest.tar.gz
+```
+    wget http://os.archlinuxarm.org/os/ArchLinuxARM-rpi-latest.tar.gz
     bsdtar -xpf ArchLinuxARM-rpi-latest.tar.gz -C root
     sync
 ```
@@ -61,11 +63,11 @@ Unmount the two partitions:
     umount boot root
 ```
 
-## 0.3 Boot and login
+### 0.3 Boot and login
 Insert the SD card into the Raspberry Pi, connect ethernet, and apply 5V power.
 
 Login as the default user alarm with the password alarm.
 
 The default root password is root.
 
-# 1. Configuration
+## 1. Configuration
