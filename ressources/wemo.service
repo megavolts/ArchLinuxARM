@@ -1,4 +1,4 @@
-# /usr/lib/systemd/system/wemo.service
+# /usr/lib/systemd/scripts/wemo.service
 
 [Unit]
 Description=Start Blynk Server
