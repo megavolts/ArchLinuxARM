@@ -66,8 +66,8 @@ java -jar server-0.28.2-java8.jar -serverConfig server.properties
 ```
 The output should looks like:
 ```
-  Blynk Server successfully started.
-  All server output is stored in current folder in 'logs/blynk.log' file.
+Blynk Server 0.28.2 successfully started.
+All server output is stored in folder '/mnt/data/blynk/logs' file.
 ```
 
 ### 1.4 Create service to start at boot
@@ -75,5 +75,6 @@ The output should looks like:
 
 
 ## Source:
-*[blynk github](https://github.com/blynkkk/blynk-server)
-*[blynk website](https://www.blynk.cc/)
+* [blynk github](https://github.com/blynkkk/blynk-server)
+
+* [blynk website](https://www.blynk.cc/)
