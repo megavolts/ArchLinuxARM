@@ -1,0 +1,22 @@
+[Unit]
+Description=A lightweight DHCP and caching DNS server
+After=network.target
+# replace br0 by wlan0 for non bridge config
+BindsTo=sys-subsystem-net-devices-br0.device
+After=sys-subsystem-net-devices-br0.device
+
+
+[Service]
+#OnBootSec=1min
+#RemainAfterElapse=True
+Type=dbus
+BusName=uk.org.thekelleys.dnsmasq
+ExecStartPre=/usr/bin/dnsmasq --test
+ExecStartPre=/usr/bin/systemctl stop systemd-resolved.service
+ExecStart=/usr/bin/dnsmasq -k --enable-dbus --user=dnsmasq --pid-file
+ExecStartPost=/usr/bin/systemctl start systemd-resolved.service
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target
+#WantedBy=timers.target
