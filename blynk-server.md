@@ -40,6 +40,24 @@ Download last version of blynk for java8 from the [release page](https://github.
 ```
 wget https://github.com/blynkkk/blynk-server/releases/download/v0.28.2/server-0.28.2-java8.jar
 ```
+### 1.2 Create self-signed SSL certificate
+The router being not connected to internet, we generate self-signed certificate and key. Otherway, one can use 'Let's Encrypt SSL solution'
+```
+openssl req -x509 -nodes -days 1825 -newkey rsa:2048 -keyout blynk.key -out blynk.crt
+```
+Reply to the quesitons, then convert blynk.key to PKCS#8 private key:
+```
+openssl pkcs8 -topk8 -inform PEM -outform PEM -in blynk.key -out blynk.pem
+```
+Enter a password, copy the certificate and keys to cert subdirectory
+```
+mkdir certs
+mv blynk.* /certs/
+```
+
+### 1.3 Configure blynk server
+
+
 Try the server with default setting by issuing:
 ```
 java -jar server-0.28.2-java8.jar -dataFolder /mnt/data/blynk
@@ -49,13 +67,6 @@ The output should looks like:
   Blynk Server successfully started.
   All server output is stored in current folder in 'logs/blynk.log' file.
 ```
-### 1.2 Advanced setup
-#### 1.2.1 'Let's Encrypt' SSL Certificate generation
-Install certbot
-```
-pacman -S certbot
-```
-
 
 ## Source:
 *[blynk github](https://github.com/blynkkk/blynk-server)
