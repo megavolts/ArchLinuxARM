@@ -1,5 +1,18 @@
-dnsmasq
-hostapd
-iptables
-phnat
-wemo
+# /usr/lib/systemd/system/wemo.service
+
+[Unit]
+Description=Start Blynk Server
+After=network-online.target
+
+[Service]
+User=root
+Type=forking
+WorkingDirectory=/opt/wemo
+ExecStart=/usr/bin/wemo start
+ExecReload=/usr/bin/wemo restart
+ExecStop=/usr/bin/wemo stop
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
