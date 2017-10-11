@@ -1,0 +1,16 @@
+[Unit]
+Description=Start Blynk Server
+After=network-online.target
+
+[Service]
+User=root
+Type=forking
+WorkingDirectory=/opt/blynk
+ExecStart=/usr/bin/blynk start
+ExecReload=/usr/bin/blynk restart
+ExecStop=/usr/bin/blynk stop
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
