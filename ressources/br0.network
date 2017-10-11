@@ -1,0 +1,12 @@
+# /etc/systemd/network/br0.network
+[Match]
+Name=br0
+
+[Network]
+DHCP=no
+#DNS=8.8.8.8
+#DNS=8.8.4.4
+#IPForward=yes
+
+[Address]
+Address = 192.168.1.1/24
