@@ -1,0 +1,17 @@
+[Unit]
+Description=Start Blynk Server
+After=network-online.target
+
+[Service]
+User=root
+Type=simple
+PIDFile=/run/phant.pid
+WorkingDirectory=/opt/phant/
+ExecStart=/usr/bin/phant
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s QUIT $MAINPID
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
