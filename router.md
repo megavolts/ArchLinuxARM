@@ -15,7 +15,11 @@ Install the packages
 pacman -S hostapd dnsmasq iptables netctl
 ```
 
-## 2. Create a network bridge
+## 2. Create an access point
+
+
+
+## 3. Create a network bridge
 wlan0, eth0 and when available usb0 are united
 ```
 cd /etc/systemd/network/
@@ -32,6 +36,8 @@ wget https://github.com/megavolts/ArchRouter/blob/master/ressources/hostapd.conf
 
 ```
 ## Source
+* [hostapd access point] (https://wiki.archlinux.org/index.php/software_access_point)
+
 * [bridge wiht systemd-networkd](https://wiki.archlinux.org/index.php/Systemd-networkd#Bridge_interface)
 
 * 
