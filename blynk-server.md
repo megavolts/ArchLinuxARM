@@ -55,18 +55,24 @@ mkdir certs
 mv blynk.* /certs/
 ```
 
-### 1.3 Configure blynk server
-
-
+### 1.3 Configure and start blynk server
+Download a copy of server.properties
+```
+wget https://raw.githubusercontent.com/megavolts/ArchRouter/master/opt/blynk/server.properties
+```
 Try the server with default setting by issuing:
 ```
-java -jar server-0.28.2-java8.jar -dataFolder /mnt/data/blynk
+java -jar server-0.28.2-java8.jar -serverConfig server.properties
 ```
 The output should looks like:
 ```
   Blynk Server successfully started.
   All server output is stored in current folder in 'logs/blynk.log' file.
 ```
+
+### 1.4 Create service to start at boot
+
+
 
 ## Source:
 *[blynk github](https://github.com/blynkkk/blynk-server)
