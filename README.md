@@ -124,7 +124,6 @@ Change console font
     echo 'FONT=Lat2-Terminus16' > /etc/vconsole.conf
 ```
 Enable only two virtual console
-    echo 'NautoVTS=2' >> /etc/systemd/logind.conf
-
+```echo 'NautoVTS=2' >> /etc/systemd/logind.conf```
 
 
