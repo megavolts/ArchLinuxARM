@@ -176,7 +176,7 @@ Disable ipv6 by
 
 ### 1.3 Install essential package:
 ``` 
-    pacman -S mlocate ntp htop
+    pacman -S mlocate ntp htop binutils fakeroot make
     updatedb
 ```
 
@@ -238,4 +238,69 @@ Reboot, log and enter root
 ### 2.2 Install
 Check presence of RTC module
 ```
+```
+## 3 Monitorix
+I use [monitorix](https://wiki.archlinux.org/index.php/Monitorix)
+### 3.1 Installation
+As non-root user, install monitorix
+```
+packer -S monitorix
+```
+### 3.2 Configuration
+Log as root, enable the default buildt-in lightweight webserver and change the port
+```
+nano /etc/monitorix/monitorix.conf
+```
+Change the title, enable the default build-in lightweight webserver and change the port
+```
+....
+title = Kiska Router
+....
+<httpd_builtin>
+        enabled = y
+        host =
+        port = 8113
+....
+<graph_enable>
+....
+        raspberry_pi = y
+....
+```
 
+Start the service and check the journal by issuing 
+```
+systemctl start monitorix
+systemctl status monitorix
+```
+If everythink looks good
+```
+systemctl enable monitorix
+```
+
+View the system stats via a webbrowser at IP:8113/monitorix. When running for the first time Monitroix, several minutes are necessary for the data collected to be displayed graphically.
+
+### 3.3 Using tmpfs to store RRD databases
+Install anyting-sync-daemon to reduce read/write on the sd card
+```
+packer -S anything-sync-daemon
+```
+Configure anything-sync-daemon:
+```
+nano -w /etc/asd.conf
+```
+Modify accordingly:
+```
+WHATTOSYNC=('/var/lib/monitorix') 
+```
+Start the service and check the journal by issuing 
+```
+systemctl start asd
+systemctl status asd
+```
+If everythink looks good
+```
+systemctl enable asd
+```
+### Source
+
+```
