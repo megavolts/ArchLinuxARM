@@ -96,30 +96,6 @@ If everythink looks good
 systemctl enable blynk
 ```
 
-### 1.5 Using tmpfs to store RRD databases
-
-Install anyting-sync-daemon to reduce read/write on the sd card
-```
-packer -S anything-sync-daemon
-````
-Configure anything-sync-daemon:
-```
-nano -w /etc/asd.conf
-```
-Add to WHATTOSYN accordingly:
-```
-WHATTOSYNC=(..., 'var/log/blynk') 
-```
-Start the service and check the journal by issuing
-```
-systemctl start asd
-systemctl status asd
-```
-If everythink looks good
-```
-systemctl enable asd
-```
-
 ## Source:
 * [blynk github](https://github.com/blynkkk/blynk-server)
 
