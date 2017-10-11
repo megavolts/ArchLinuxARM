@@ -1,0 +1,13 @@
+8040	phant port
+8041	phant telnet port
+
+8080	monitorix localhost:8080/monitorix
+
+8440	blynk hardware mqtt
+8441	blynk hardware ssl
+8442	blynk hardware plain tcp/ip port
+8443	blynk ssl port
+8880	blynk http port
+8881	blynk web sockets ssl port
+8882	blynk web sockets plain tcp port
+9443	blynk https port
