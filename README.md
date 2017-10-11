@@ -26,9 +26,7 @@ At the fdisk prompt, delete old partitions and create a new one:
 3. Type n, then p for primary, 1 for the first partition on the drive, press ENTER to accept the default first sector, then type +100M for the last sector.
 4. Type t, then c to set the first partition to type W95 FAT32 (LBA).
 5. Type n, then p for primary, 2 for the second partition on the drive, press ENTER to accept the default first sector, then type +4G for the last sector.
-6. Type n, then p for primary, 3 for the second partition on the drive, press ENTER to accept the default first sector, then type +4G for the last sector.
-7. Type n, then p for primary, 4 for the second partition on the drive, and then press ENTER twice to accept the default first and last sector.
-8. Write the partition table and exit by typing w.
+6. Write the partition table and exit by typing w.
 
 Create and mount the FAT filesystem:
 ```
@@ -43,11 +41,7 @@ Create and mount the ext4 filesystem:
     mkdir root
     mount /dev/sdX2 root
 ```
-Create home anda data
-```
-    mkfs.ext4 /dev/mmcblkpXs3
-    mkfs.ext4 /dev/mmcblkpXs4
-```
+
 
 ### 0.2 Install ArchLinux system
 Download and extract the root filesystem (as root, not via sudo):
@@ -182,7 +176,7 @@ Disable ipv6 by
 
 ### 1.3 Install essential package:
 ``` 
-    pacman -S mlocate ntp
+    pacman -S mlocate ntp htop
     updatedb
 ```
 
