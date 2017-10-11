@@ -1,0 +1,6 @@
+# /etc/systemd/network/usb0.network                                                                                 :(
+[Match]
+Name=usb0
+
+[Network]
+DHCP=ipv4
