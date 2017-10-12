@@ -87,21 +87,25 @@ Install iptables
 ```
 pacman -S iptables
 ```
-Download configuraiton for iptables
+Enable ip forwarding and make it stick at boot
 ```
-cd /etc/iptables
-wget https://github.com/megavolts/ArchRouter/raw/master/ressources/iptables.rules
+sysctl net.ipv4.ip_forward=1  
+echo net.ipv4.ip_forward=1 >> /etc/sysctl.d/ipforward.conf
 ```
-Start and enable dnsmasq service
+Enable NAT
+```
+iptables -t nat -A POSTROUTING -o usb0 -j MASQUERADE
+iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i br0 -o usb0 -j ACCEPT
+```
+Save the rules
+```
+iptables-save > /etc/iptables/iptables.conf
+```
+Start and enable iptables
 ```
 systemctl start iptables
 systemctl enable iptables
-```
-
-Enable ip forwarding
-```
-sysctl 
-echo net.ipv4.ip_forward=1 >> /etc/sysctl.conf    
 ```
 Restart systemd-networkd
 ```
