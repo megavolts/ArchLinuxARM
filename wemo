@@ -1,0 +1,46 @@
+# Wemo server
+
+## Install server
+Create a directory for wemo server
+Create a directory for blynk server
+```
+mkdir /opt/wemo
+cd /opt/wemo
+```
+Download the latest version of wemo server and the scripts
+```
+wget https://sites.google.com/site/mppsuite/downloads/wemoserver-java/WemoServer.jar  
+wget https://sites.google.com/site/mppsuite/downloads/wemoserver-java/wemo-scripts.tar
+```
+Extract the archive and move the script to a subdirectory
+```
+tar -xvf wemo-scripts
+mkdir scripts
+mv wemo_* scripts/
+rm wemo-service-init-d.example
+```
+
+## Enable wemo at boot
+Create a wemo service:
+```
+cd /usr/lib/systemd/system/
+wget https://raw.githubusercontent.com/megavolts/ArchRouter/master/ressources/wemo/wemo.service
+```
+And download the script to /usr/bin/ to handle
+```
+cd /usr/bin
+wget https://raw.githubusercontent.com/megavolts/ArchRouter/master/ressources/wemo/wemo
+chmod +x wemo
+```
+Start the service and check the journal by issuing
+```
+systemctl start wemo
+systemctl status wemo
+```
+If everythink looks good
+```
+systemctl enable wemo
+```
+
+## Source
+* [WemoServer](https://sites.google.com/site/mppsuite/downloads/wemoserver-java)
