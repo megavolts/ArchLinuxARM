@@ -76,6 +76,10 @@ wget https://github.com/megavolts/ArchRouter/raw/master/ressources/dnsmasq.conf
 Start and enable dnsmasq service
 ```
 systemctl start dnsmasq
+systemctl status dnsmasq
+```
+If nothing is wrong, enable the service at boot
+```
 systemctl enable dnsmasq
 ```
 ## 5. Configure iptables
@@ -94,6 +98,11 @@ systemctl start iptables
 systemctl enable iptables
 ```
 
+Enable ip forwarding
+```
+sysctl 
+echo net.ipv4.ip_forward=1 >> /etc/sysctl.conf    
+```
 Restart systemd-networkd
 ```
 systemctl restart systemd-networkd
