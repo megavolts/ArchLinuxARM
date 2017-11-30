@@ -90,7 +90,7 @@ Change the root password
 ```
 Creat a new user (megavolts) and delete default user alarm
 ```
-    useradd -m -g users -G wheel,locate,network -s /bin/bash megavotls
+    useradd -m -g users -G wheel,locate,network -s /bin/bash megavolts
     userdel alarm
 ```
 Creating a new passowrd for megavolts
