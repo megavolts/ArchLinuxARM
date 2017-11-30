@@ -91,31 +91,44 @@ Change the root password
 Creat a new user (megavolts) and delete default user alarm
 ```
     useradd -m -g users -G wheel,locate,network -s /bin/bash megavolts
-    userdel alarm
 ```
-Creating a new passowrd for megavolts
+Creating a new passowrd for megavolts and logout
 ```
-    passwd megavolts
+passwd megavolts
+exit
+exit
 ```
 Enter the passward twice
 
-#### SSH config
-Modifying ssh config
-```
-    nano -w /etc/ssh/sshd_config
-```
-1. Changin port ```Port 1354```
-2. Adding ```Protocol 2```
-3. Forbidding root login ```PermitRootLogin no```
-
-Restart ssh config
-```
-    systemctl daemon-reload
-```
 Login as megavolts and enter root
 ```
-    ssh megavolts@137.229.94.166 -p 1354
-    su
+ssh megavolts@137.229.94.166 -p 1354
+su
+userdel alarm
+```
+
+#### SSH config
+Install secure shell
+```
+yaourt -S openssh
+```
+Configure sshd socket to listen to ports 1354
+```
+systemctl edit sshd.sockets
+----------------
+[Socket]
+ListenStream=1354
+```
+Forbid root login
+```
+nano -w /etc/ssh/sshd_config
+---
+PermitRootLogin no
+```
+Enable sshd socket
+```
+systemctl enable sshd.socket
+systemctl start sshd.socket
 ```
 
 ### 1.1 Update system and keyring
