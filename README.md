@@ -92,7 +92,7 @@ Creat a new user (megavolts) and delete default user alarm
 ```
     useradd -m -g users -G wheel,locate,network -s /bin/bash megavolts
 ```
-Creating a new passowrd for megavolts and logout
+Creating a new password for megavolts and logout
 ```
 passwd megavolts
 exit
@@ -240,6 +240,20 @@ Create shortcut shell scripts to re-enable read-write temporarily if needed
 
 Reboot, log and enter root
 
+### 1.6 Install packer aur package manager
+Install dependencies
+```
+pacman -S curl git wget gcc
+```
+Download and build package-query, as non-root user
+```
+wget https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=package-query
+mv PKGBUILD?<bla> PKGBUILD
+makepkg PKGBUILD
+sudo pacman -U yaourt-XXX
+```
+
+
 ## 2 Time and RTC module
 ### 2.1 Update timezone:
 ```
@@ -251,6 +265,7 @@ Reboot, log and enter root
 ### 2.2 Install
 Check presence of RTC module
 ```
+pacman -S i2c-tools
 ```
 ## 3 Monitorix
 I use [monitorix](https://wiki.archlinux.org/index.php/Monitorix)
@@ -263,10 +278,7 @@ packer -S monitorix
 Log as root, enable the default buildt-in lightweight webserver and change the port
 ```
 nano /etc/monitorix/monitorix.conf
-```
-Change the title, enable the default build-in lightweight webserver and change the port
-```
-....
+----
 title = Kiska Router
 ....
 <httpd_builtin>
