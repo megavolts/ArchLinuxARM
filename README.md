@@ -18,7 +18,7 @@ Replace mmcblkX in the following instructions with the device name for the SD ca
 ### 0.1 Create filesystem
 Start fdisk to partition the SD card:
 ```
-    fdisk /dev/mmcblkp0
+fdisk /dev/mmcblkp0
 ```
 At the fdisk prompt, delete old partitions and create a new one:
 1. Type o. This will clear out any partitions on the drive.
@@ -30,33 +30,33 @@ At the fdisk prompt, delete old partitions and create a new one:
 
 Create and mount the FAT filesystem:
 ```
-    mkfs.vfat /dev/mmcblkpXs1
-    mkdir boot
-    mount /dev/sdX1 boot
+mkfs.vfat /dev/mmcblkpXs1
+mkdir boot
+mount /dev/sdX1 boot
 ```
 
 Create and mount the ext4 filesystem:
 ```
-    mkfs.ext4 /dev/mmcblkpXs2
-    mkdir root
-    mount /dev/sdX2 root
+mkfs.ext4 /dev/mmcblkpXs2
+mkdir root
+mount /dev/sdX2 root
 ```
 
 
 ### 0.2 Install ArchLinux system
 Download and extract the root filesystem (as root, not via sudo):
 ```
-    wget http://os.archlinuxarm.org/os/ArchLinuxARM-rpi-latest.tar.gz
-    bsdtar -xpf ArchLinuxARM-rpi-latest.tar.gz -C root
-    sync
+wget http://os.archlinuxarm.org/os/ArchLinuxARM-rpi-latest.tar.gz
+bsdtar -xpf ArchLinuxARM-rpi-latest.tar.gz -C root
+sync
 ```
 Move boot files to the first partition:
 ```
-    mv root/boot/* boot
+mv root/boot/* boot
 ```
 Unmount the two partitions:
 ```
-    umount boot root
+umount boot root
 ```
 
 ### 0.3 Boot and login
@@ -64,29 +64,29 @@ Insert the SD card into the Raspberry Pi, connect ethernet, and apply 5V power.
 
 Login as the default user alarm with the password alarm.
 
-The default root password is root.
+Defaults users are alarm:alarm and root:root
 
 ## 1. Configuration
 Within the same wired network, get the IP address from the MAC:
 ```
-    sudo arp-scan -q -l --interface enp0s25 | grep b8:27:eb:01:bd:78
+sudo arp-scan -q -l --interface enp0s25 | grep b8:27:eb:01:bd:78
 ```
 The command return XXX.XXX.XXX.XXX  b8:27:eb:01:bd:78
 
 Log via ssh to IP
 ```
-    ssh alarm@XXX.XXX.XXX.XXX 
+ssh alarm@XXX.XXX.XXX.XXX 
 ```
 Enter root
 ```
-    su
+su
 ```
 
 ### 1.0 Improve security
 #### Change password and user
 Change the root password
 ```
-    passwd
+passwd
 ```
 Creat a new user (megavolts) and delete default user alarm
 ```
@@ -102,103 +102,78 @@ Enter the passward twice
 
 Login as megavolts and enter root
 ```
-ssh megavolts@137.229.94.166 -p 1354
+ssh megavolts@137.229.94.166
 su
 userdel alarm
 ```
 
-#### SSH config
-Install secure shell
-```
-yaourt -S openssh
-```
-Configure sshd socket to listen to ports 1354
-```
-systemctl edit sshd.sockets
-----------------
-[Socket]
-ListenStream=1354
-```
-Forbid root login
-```
-nano -w /etc/ssh/sshd_config
----
-PermitRootLogin no
-```
-Enable sshd socket
-```
-systemctl enable sshd.socket
-systemctl start sshd.socket
-```
 
 ### 1.1 Update system and keyring
+Update the system
+```
+pacman -Syu
+```
 Install random  number generator and archlinux-keyring
 ```
-    pacman -S haveged archlinux-keyring
+pacman -S haveged
 ```
-Initiate keyring with palliating the low-entropy issue
+Install archlinux keyring, initiate keyring with palliating the low-entropy issue with haveged
 ```
-        haveged -w 1024
-        pacman-key --init
-        pkill haveged
-        pacman-key --populate archlinux
-```
-Update the whole system
-```
-    pacman -Syu
+pacman -S haveged
+haveged -w 1024
+pacman-key --init
+pkill haveged
+pacman -S archlinux-keyring
+pacman-key --populate archlinux
+pacman -Syu
 ```
 
 ### 1.2 Configuration
-Install zsh and set it as default for root
-```
-    pacman -S grml-zsh-config
-    chsh -s $(which zsh)
-```
-Logout and login to change the shell
-
 Change console font
 ```
-    echo 'FONT=Lat2-Terminus16' > /etc/vconsole.conf
+echo 'FONT=Lat2-Terminus16' > /etc/vconsole.conf
 ```
 Enable only two virtual console
 ```
-    echo 'NautoVTS=2' >> /etc/systemd/logind.conf
+echo 'NautoVTS=2' >> /etc/systemd/logind.conf
 ```
 Change hostname
 ```
-    echo kiska > /etc/hostname
+echo kiska > /etc/hostname
 ```
 And modify hosts file
 ```
-    nano -w /etc/hosts
+nano -w /etc/hosts
 ```
 Add kiska after localhost.
 
 Disable ipv6 by
 1. Modifying the hosts file:
-   ```
-          nano -w /etc/hosts
-   ```
-   And commenting out ```#::1 ...```
+```
+nano -w /etc/hosts
+```
+And commenting out ```#::1 ...```
 2. Disabling ipv6 in ```/etc/sysctl.d/ipv6.conf```
-   ```
-       echo 'net.ipv6.conf.all.disable_ipv6=1' > /etc/sysctl.d/ipv6.conf
-       echo 'net.ipv6.conf.eth0.disable_ipv6=1' >> /etc/sysctl.d/ipv6.conf
-       echo 'net.ipv6.conf.wlan0.disable_ipv6=1' >> /etc/sysctl.d/ipv6.conf
-    ```
+```
+echo 'net.ipv6.conf.all.disable_ipv6=1' > /etc/sysctl.d/ipv6.conf
+echo 'net.ipv6.conf.eth0.disable_ipv6=1' >> /etc/sysctl.d/ipv6.conf
+echo 'net.ipv6.conf.wlan0.disable_ipv6=1' >> /etc/sysctl.d/ipv6.conf
+```
 
 ### 1.3 Install essential package:
 ``` 
-    pacman -S mlocate ntp htop binutils fakeroot make
-    updatedb
+pacman -S mlocate ntp htop binutils fakeroot make
+updatedb
 ```
+
+### 1.4 Install i2c rtc clock
 
 ### 1.4 Configuring i2c
 Add the following line into ```/boot/config.txt```
 ```
-    device_tree=bcm2708-rpi-b.dtb
-    device_tree_param=i2c1=on
-    device_tree_param=spi=on
+device_tree=bcm2708-rpi-b.dtb
+device_tree_param=i2c1=on
+device_tree_param=spi=on
 ```
 
 ### 1.5 Read-only root and boot
