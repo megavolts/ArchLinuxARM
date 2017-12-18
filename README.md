@@ -167,33 +167,20 @@ updatedb
 ```
 
 ### 1.4 Install i2c rtc clock
-Enable i2c in the kernel
+Run he scripts as root
 ```
-nano /boot/config.txt
----------------------------------
-device_tree_param=i2c_arm=on
+wget ..
+chmod +x ds1307_rtc.sh
+./ds1307_rtc.sh
 ```
-Add 
+Update the system time
 ```
-nano /etc/modules-load.d/rtc.conf
-------------------------------------
-# RTC clcok DS1307
-rtc-ds1307
-i2c-dev
+systemctl stop ntpd
+ntpd –dqg
 ```
-pacman -S i2c-tools
+Sync RTC with clock:
 ```
-And check the presence of the rtc clock
-```
-i2cdetect –y –r  1
-```
-
-### 1.4 Configuring i2c
-Add the following line into ```/boot/config.txt```
-```
-device_tree=bcm2708-rpi-b.dtb
-device_tree_param=i2c1=on
-device_tree_param=spi=on
+hwclock -f /dev/rtc0 –w
 ```
 
 ### 1.5 Read-only root and boot
