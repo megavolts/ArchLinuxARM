@@ -18,13 +18,17 @@ Enable systemd-networkd
 ```
 systemctl start systemd-networkd 
 systemctl enable systemd-networkd 
-systemctl enable systemd-resovld
+```
+Enable resolved abnd symlink   if the DNS are note managed in /etc/resolv.conf.
+```
+systemd-resolved.service
+ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
 ```
 
 ## 2. Create bridge
 ```
 cd /etc/systemd/network/
-wget https://raw.githubusercontent.com/megavolts/ArchRouter/master/ressources/netctl/br0.netdev
+wget https://raw.githubusercontent.com/megavolts/ArchRouter/master/ressources/bridge/br0.netdev
 ```
 Load br_netfilter module
 ```
@@ -34,10 +38,10 @@ echo br_netfilter >> /etc/modules-load.d/bridge.conf
 Add eth0, usb0, wlan0 to bridge and create bridge interface
 ```
 rm eth0.network
-wget https://raw.githubusercontent.com/megavolts/ArchRouter/master/ressources/netctl/wlan0.network
-wget https://raw.githubusercontent.com/megavolts/ArchRouter/master/ressources/netctl/eth0.network
-wget https://raw.githubusercontent.com/megavolts/ArchRouter/master/ressources/netctl/usb0.network
-wget https://raw.githubusercontent.com/megavolts/ArchRouter/master/ressources/netctl/br0.network
+wget https://raw.githubusercontent.com/megavolts/ArchRouter/master/ressources/bridge/wlan0.network
+wget https://raw.githubusercontent.com/megavolts/ArchRouter/master/ressources/bridge/eth0.network
+wget https://raw.githubusercontent.com/megavolts/ArchRouter/master/ressources/bridge/usb0.network
+wget https://raw.githubusercontent.com/megavolts/ArchRouter/master/ressources/bridge/br0.network
 ```
 ## 3. Create Access Point
 Install hostapd
@@ -70,8 +74,7 @@ pacman -S dnsmas
 ```
 Download dnsmasq configurationt to /etc/
 ```
-cd /etc/
-wget https://github.com/megavolts/ArchRouter/raw/master/ressources/dnsmasq.conf
+wget https://github.com/megavolts/ArchRouter/raw/master/ressources/dnsmasq.conf -p /etc/dnsmasq.conf
 ```
 Start and enable dnsmasq service
 ```
@@ -92,6 +95,11 @@ Enable ip forwarding and make it stick at boot
 sysctl net.ipv4.ip_forward=1  
 echo net.ipv4.ip_forward=1 >> /etc/sysctl.d/ipforward.conf
 ```
+Download iptables run
+```
+cd /etc/iptables/iptables.rules
+wget https://github.com/megavolts/ArchRouter/raw/master/ressources/iptables/iptables.rules
+```
 Enable NAT
 ```
 iptables -t nat -A POSTROUTING -o usb0 -j MASQUERADE
@@ -109,8 +117,7 @@ systemctl enable iptables
 ```
 Restart systemd-networkd
 ```
-systemctl restart systemd-networkd
-```
+``
 
 
 
