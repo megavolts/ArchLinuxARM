@@ -167,6 +167,26 @@ updatedb
 ```
 
 ### 1.4 Install i2c rtc clock
+Enable i2c in the kernel
+```
+nano /boot/config.txt
+---------------------------------
+device_tree_param=i2c_arm=on
+```
+Add 
+```
+nano /etc/modules-load.d/rtc.conf
+------------------------------------
+# RTC clcok DS1307
+rtc-ds1307
+i2c-dev
+```
+pacman -S i2c-tools
+```
+And check the presence of the rtc clock
+```
+i2cdetect –y –r  1
+```
 
 ### 1.4 Configuring i2c
 Add the following line into ```/boot/config.txt```
