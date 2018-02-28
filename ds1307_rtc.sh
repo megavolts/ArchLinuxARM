@@ -3,17 +3,14 @@ echo -e ".. installing I2C RTC for Arch Linux ARM"
 echo -e ""
 
 pacman -S --needed --noconfirm i2c-tools
-
 echo -e ".. activating I2C devicetree in /boot/config.txt"
-
 sed --in-place 's/^#device_tree_param=i2c_arm=on/device_tree_param=i2c_arm=on/' "/boot/config.txt"
 
 #-----------------------------------------------------------
 echo -e ""
 echo -e ".. adding i2c and rtc modules to the conf"
-
-echo rtc-ds1307 >> /etc/modules-load.d/rtc.conf
-echo i2c-dev    >> /etc/modules-load.d/rtc.conf
+echo "rtc-ds1307" >> /etc/modules-load.d/rtc.conf
+echo "i2c-dev"    >> /etc/modules-load.d/rtc.conf
 sort /etc/modules-load.d/rtc.conf | uniq > /etc/modules-load.d/rtc.conf
 
 #-----------------------------------------------------------
@@ -45,7 +42,7 @@ Type=oneshot
 [Install]
 WantedBy=multi-user.target
 ENDRTCSERVICE
-
+ca/usr 
 #-----------------------------------------------------------
 echo -e ""
 echo -e ".. enabling and starting RTC service"
