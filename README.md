@@ -162,14 +162,14 @@ echo 'net.ipv6.conf.wlan0.disable_ipv6=1' >> /etc/sysctl.d/ipv6.conf
 
 ### 1.3 Install essential package:
 ``` 
-pacman -S mlocate ntp htop binutils fakeroot make
+pacman -S mlocate ntp htop binutils fakeroot make wget
 updatedb
 ```
 
 ### 1.4 Install i2c rtc clock
 Run he scripts as root
 ```
-wget ..
+wget https://raw.githubusercontent.com/megavolts/ArchRouter/master/ds1307_rtc.sh
 chmod +x ds1307_rtc.sh
 ./ds1307_rtc.sh
 ```
@@ -181,6 +181,11 @@ ntpd –dqg
 Sync RTC with clock:
 ```
 hwclock -f /dev/rtc0 –w
+```
+Change timezone
+```
+timedatectl set-timezone America/Anchorage
+timedatectl status
 ```
 
 ### 1.5 Read-only root and boot
@@ -225,30 +230,24 @@ Reboot, log and enter root
 ### 1.6 Install packer aur package manager
 Install dependencies
 ```
-pacman -S curl git wget gcc
+pacman -S curl git wget gcc yajl pkg-config
 ```
-Download and build package-query, as non-root user
+Download and build package-query and yaourt, as non-root user
 ```
-wget https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=package-query
-mv PKGBUILD?<bla> PKGBUILD
-makepkg PKGBUILD
-sudo pacman -U yaourt-XXX
+wget https://aur.archlinux.org/cgit/aur.git/snapshot/package-query.tar.gz
+tar -xvzf package-query.tar.gz
+cd package-query
+makepkg -si
+cd ..
+wget https://aur.archlinux.org/cgit/aur.git/snapshot/yaourt.tar.gz
+tar -xvzf yaourt.tar.gz
+cd yaourt
+makepkg -si
+
+cd ../
+rm -rf package-query/ package-query.tar.gz yaourt/ yaourt.tar.gz
 ```
 
-
-## 2 Time and RTC module
-### 2.1 Update timezone:
-```
-    timedatectl set-timezone America/Anchorage
-    ntpd -qg
-    timedatectl status
-```
-
-### 2.2 Install
-Check presence of RTC module
-```
-pacman -S i2c-tools
-```
 ## 3 Monitorix
 I use [monitorix](https://wiki.archlinux.org/index.php/Monitorix)
 ### 3.1 Installation
