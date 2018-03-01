@@ -21,7 +21,8 @@ systemctl enable systemd-networkd
 ```
 Enable resolved abnd symlink   if the DNS are note managed in /etc/resolv.conf.
 ```
-systemd-resolved.service
+systemctl start systemd-resolved.service
+systemctl enable systemd-resolved.service
 ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
 ```
 
