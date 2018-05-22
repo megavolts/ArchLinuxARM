@@ -32,6 +32,12 @@ Linux-sunxi kernel suppor HW decoding
 
 # Configuration
 
+## Essential packages
+```
+apt-get install mlocate
+updatedb
+```
+
 ## Update the system
 ```
 apt-get update
@@ -195,14 +201,23 @@ END DELETE
 # Plex media center
 # Install plex
 
-# Kodi server
+# Kodi standalone server
 Install the main package
 ```
 apt install kodi
-apt install 
-
-
-
+```
+Create kodi user with blank password
+```
+addgroup kodi
+useradd -c 'kodi user' -u 420 -g kodi -G audio,video,netdev -d /var/lib/kodi -s /usr/bin/nologin kodi
+passwd -l kodi > /dev/null
+mkdir -p /var/lib/kodi/.kodi 
+chown -R kodi:kodi /var/lib/kodi/.kodi
+```  
+Start kodi-standalone with
+```
+systemctl start kodi
+```
 ## Change hostname
 Change hostname in `/etc/hostname`:
 ```
