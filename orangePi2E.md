@@ -1,27 +1,214 @@
+
+
+
 kiska
 * wlan0: HWMac 12:81:c6:e7:c5:62
 * etho0: HWMac 02:81:c6:e7:c5:62
-#
-Debian Stretch
-kiska
+# 
 
-### Change hostname
+Image can be founda at http://www.orangepi.org/downloadresources/.
+* Armbian: headless debian-bases server
+
+# Emmc installed
+Extract the archive
+```
+7za e Armbian_5.38_Orangepiplus2e_Debian_stretch_next_4.14.14.7z
+```
+As root, copy image to SD card and sync
+```
+sudo dd if=Armbian_5.38_Orangepiplus2e_Debian_stretch_next_4.14.14.img of=/dev/mmcblk0 && sync
+```
+Boot the orangepi with the SD card. After login as root (root:1234), follow the initialisation step.
+
+Install os on the emmc with, and follow the instruction
+```
+sudo nand-sata-install
+```
+Turn off the Orange, remove the SD card from the drive, and turn on the Orange which will reboot to eMMC.
+
+# Install linux-sunxi kernel
+Linux-sunxi kernel suppor HW decoding
+
+
+# Configuration
+
+## Update the system
+```
+apt-get update
+apt-get upgrade
+apt upgrade
+reboot
+```
+
+## Harden ssh
+Forbid root login via ssh
+Modifiy `/etc/ssh/sshd_config`:
+```
+PermitRootLogin no 
+```
+
+## Setting up X-server
+Install dependencies:
+```
+apt-get install git build-essential xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake xinit xerger-xorg
+```
+Install fbturbo
+```
+git clone -b 0.4.0 https://github.com/ssvb/xf86-video-fbturbo.git
+cd xf86-video-fbturbo
+autoreconf -vi
+./configure --prefix=/usr
+make
+make install
+```
+Test xorg with pekwm
+```
+apt-get install pekwm
+echo "exec pekwm" ~/.xinitrc
+startx
+```
+
+
+NO NEED YET
+
+### INstall the Unified Memory Provider (UMP)
+Install dependencies
+``` 
+apt-get install git build-essential autoconf libtool debhelper dh-autoreconf fakeroot pkg-config
+```
+Clone and build packages after descending into the git tree
+```
+git clone https://github.com/linux-sunxi/libump.git
+cd libump
+dpkg-buildpackage -b
+```
+Install the package
+```
+dpkg -i ../libump_*.deb
+```
+
+### Install the Mali Userspace driver
+Install dependencies
+```
+apt-get install automake xutils-dev
+```
+Clone the repositories
+```
+git clone --recursive https://github.com/linux-sunxi/sunxi-mali.git
+cd sunxi-mali
+```
+Configure 
+```
+rm -f config.mk
+```
+
+
+## Compile mali graphical driver
+Install dependencies:
+```
+apt-get install libx11-dev libxext-dev xutils-dev libdrm-dev x11proto-xf86dri-dev libxfixes-dev x11proto-dri2-dev xserver-xorg-dev build-essential automake pkg-config libtool ca-certificates git cmake subversion
+```
+Clone 3rd party packages:
+```
+mkdir mali
+cd mali
+git clone https://github.com/linux-sunxi/libump
+
+git clone https://github.com/linux-sunxi/sunxi-mali
+git clone https://github.com/robclark/libdri2
+git clone https://github.com/ssvb/xf86-video-fbturbo
+git clone https://github.com/ptitSeb/glshim
+```
+Compile libdr2:
+```
+cd libdri2/
+autoreconf -i
+./configure --prefix=/usr
+make
+make install
+ldconfig
+cd ..
+```
+Compile libump
+```
+cd libump/
+autoreconf -i
+./configure --prefix=/usr
+make
+make install
+cd ..
+```
+Compile mali
+```
+cd sunxi-mali/
+git submodule init
+git submodule update
+git pull
+wget http://pastebin.com/raw.php?i=hHKVQfrh -O ./include/GLES2/gl2.h
+wget http://pastebin.com/raw.php?i=ShQXc6jy -O ./include/GLES2/gl2ext.h
+make config ABI=armhf VERSION=r3p0
+mkdir /usr/lib/mali
+echo "/usr/lib/mali" > /etc/ld.so.conf.d/1-mali.conf
+make -C include install
+make -C lib/mali prefix=/usr libdir='$(prefix)/lib/mali/' install
+cd ..
+```
+compile fbturbo:
+```
+cd xf86-video-fbturbo
+autoreconf -i
+./configure --prefix=/usr
+make
+make install
+cd ..
+```
+compile glshim:
+```
+cd glshim
+cmake .
+make
+cp lib/libGL.so.1 /usr/lib/
+cd ..
+```
+Assign permissions group video for /dev/ump and /dev/mali
+```
+echo "KERNEL=="mali", MODE="0660", GROUP="video"" >> /etc/udev/rules.d/50-mali.rules
+echo "KERNEL=="ump", MODE="0660", GROUP="video"" >> /etc/udev/rules.d/50-mali.rules
+```
+add swap if you work with 512MB of RAM:
+```
+dd if=/dev/zero of=/swapmem bs=1024 count=524288
+chown root:root /swapmem
+chmod 0600 /swapmem
+mkswap /swapmem
+swapon /swapmem
+```
+Add the swap information to /etc/fstab:
+```
+echo "/swapmem none swap sw 0 0" >> /etc/fstab
+reboot
+```
+END DELETE
+# Graphical server
+
+
+# Plex media center
+# Install plex
+
+# Kodi server
+Install the main package
+```
+apt install kodi
+apt install 
+
+
+
+## Change hostname
 Change hostname in `/etc/hostname`:
 ```
 echo kiska > /etc/hostname
 ```
 Add `kiska` to `/etc/hosts`:
-
-
-
-
-Give write permission to `/mnt/data` to the group users
-```
-usermod -a -G users megavolts
-usermod -a -G users plex
-chown root:users /mnt/data -R
-chmod 775 /mnt/data/ -R
-```
 
 
 ### SD card as storage
@@ -34,11 +221,17 @@ Add to mountfs:
 ```
 /dev/mmcblk0p1  /mnt/data       f2fs    defaults,nofail,x-systemd.device-timetout=1     0 2
 ```
-### Harden ssh
-MOdifiy `/etc/ssh/sshd_config`:
+
+
+Give write permission to `/mnt/data` to the group users
 ```
-PermitRootLogin no 
+usermod -a -G users megavolts
+usermod -a -G users plex
+chown root:users /mnt/data -R
+chmod 775 /mnt/data/ -R
 ```
+
+
 
 ## Plex server
 ### Install plex
@@ -63,3 +256,7 @@ In a webbroser
 ```
 localhost:8888/web
 ```
+
+
+# Source
+* https://diyprojects.io/orange-pi-plus-2e-unpacking-installing-armbian-emmc-memory/
