@@ -1,4 +1,4 @@
-
+* impossible to compile mali kernel driver *
 
 
 kiska
@@ -27,6 +27,26 @@ sudo nand-sata-install
 Turn off the Orange, remove the SD card from the drive, and turn on the Orange which will reboot to eMMC.
 
 # Install linux-sunxi kernel
+## Compile mali kernel driver
+ Install corrs compiler
+ ```
+echo "deb http://emdebian.org/tools/debian/ stretch main" >>/etc/apt/sources.list.d/crosstools.list 
+curl http://emdebian.org/tools/debian/emdebian-toolchain-archive.key | sudo apt-key add -
+sudo dpkg --add-architecture armhf
+sudo apt-get update
+sudo apt-get install crossbuild-essential-armhf
+```
+Compile mali kernel driver
+```
+git clone https://github.com/mripard/sunxi-mali.git
+cd sunxi-mali
+export CROSS_COMPILE=$TOOLCHAIN_PREFIX
+export KDIR=$KERNEL_BUILD_DIR
+export INSTALL_MOD_PATH=$TARGET_DIR
+./build.sh -r r6p2 -b
+./build.sh -r r6p2 -i
+```
+
 Linux-sunxi kernel suppor HW decoding
 
 
