@@ -6,7 +6,7 @@ kiska
 * etho0: HWMac 02:81:c6:e7:c5:62
 # 
 
-Image can be founda at http://www.orangepi.org/downloadresources/.
+Image can be found at http://www.orangepi.org/downloadresources/.
 * Armbian: headless debian-bases server
 
 # Emmc installed
@@ -27,7 +27,17 @@ sudo nand-sata-install
 Turn off the Orange, remove the SD card from the drive, and turn on the Orange which will reboot to eMMC.
 
 # Configuration
-Update the system
+Change debian version from `stretch` to `buster` to enable qt5 => 5.9
+```
+nano -w /etc/apt/sources.list
+-----------------------------
+deb http://httpredir.debian.org/debian buster main contrib non-free
+
+deb http://httpredir.debian.org/debian buster-updates main contrib non-free
+
+deb http://security.debian.org/ buster/updates main contrib non-free
+```
+Then update the system
 ```
 apt update
 apt upgrade
@@ -47,12 +57,16 @@ And follow the menu to:
 * Software/Headers
 * Software/Full
 
-
-
 ## Essential packages
 ```
 apt-get install mlocate
 updatedb
+```
+
+## Install graphic interface
+```
+apt-get install pekwm
+
 ```
 
 
