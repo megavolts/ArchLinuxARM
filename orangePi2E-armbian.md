@@ -33,6 +33,9 @@ reboot
 ```
 
 # Mali driver
+```
+apt get install mesa-utils mesa-utils-extra
+```
 ## Mali Kernel Module
 Check if `CONFIG_CMA` and `CONFIG_DMA_CMA` are enabled in the kernel with
 ```
@@ -45,9 +48,10 @@ apt install linux-source-4.14.18-next-sunxi quilt
 mkdir /usr/src/linux-source-4.14.18-sunxi
 tar -xf /usr/src/linux-source-4.14.18-sunxi.tar.xz -C /usr/src/linux-source-4.14.18-sunxi
 ```
+
 Check kernel version in `/usrs/src/linux-source-#VERSION/include/generated/utsrelease.h` and '`/usrs/src/linux-source-#VERSION/include/config/kernel.release`. It should match the kernel version 4.14.18
 
-Build the kernel module after applying patch (./build.sh -r r6p2 -a)
+Build the kernel module after applying patch (./build.sh -r r6p2 -b)
 ```
 cd ~
 git clone https://github.com/mripard/sunxi-mali.git
@@ -58,11 +62,11 @@ export KDIR=/usr/src/linux-source-4.14.18-sunxi
 ./build.sh -r r6p2 -b
 ./build.sh -r r6p2 -i 
 ```
-If `./build.sh -r r6p2 -b` failed, use
+If `./build.sh -r r6p2 -b` failed, apply patch, then build the kernel with `USING_UMP=1`
 ```
 ./build.sh -r r6p2 -a
-make -j 4 USING_UMP=0 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-source-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=/lib/modules/4.14.18-sunxi/extra/ -C /usr/src/linux-source-4.14.18-sunxi
-make JOBS=4 USING_UMP=0 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-source-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=/lib/modules/4.14.18-sunxi/extra/ -C ~/sunxi-mali/r6p2/src/devicedrv/mali install
+make -j 4 USING_UMP=1 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-source-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=/lib/modules/4.14.18-sunxi/extra/ -C /usr/src/linux-source-4.14.18-sunxi
+make JOBS=4 USING_UMP=1 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-source-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=/lib/modules/4.14.18-sunxi/extra/ -C ~/sunxi-mali/r6p2/src/devicedrv/mali install
 ```
 Load the module
 ```
@@ -74,11 +78,110 @@ git clone https://github.com/free-electrons/mali-blobs.git
 cd mali-blobs
 cp -a r6p2/fbdev/lib/lib_fb_dev/lib* /usr/lib
 ```
+## Compile mali_drm
+```
+cd sunxi-mali/r6p2//src/egl/x11/drm_module/mali_drm
+```
+Change `drmP.h` into `<drm/drmP.h>` in mali/mali_drv.c
+
+```
+make KDIR=/usr/src/linux-source-4.14.18-sunxi ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
+
+
+## Install dri2
+```
+git clone https://github.com/robclark/libdri2
+cd libdri2/
+autoreconf -i
+./configure --prefix=/usr
+make
+make install
+ldconfig
+cd ..
+```
+
+## Install libump
+```
+git clone https://github.com/linux-sunxi/libump
+cd libump/
+autoreconf -i
+./configure --prefix=/usr
+make
+make install
+cd ..
+```
+
+## Compile mali userspace driver
+Assign permission to `mali` and `ump`
+```
+echo "KERNEL==\"mali\", MODE=\"0660\", GROUP=\"video\"" > /etc/udev/rules.d/50-mali.rules
+echo "KERNEL==\"ump\", MODE=\"0660\", GROUP=\"video\"" >> /etc/udev/rules.d/50-mali.rules
+```
+Check if `mali` kernel module is loaded with `lsmod | grep mali`
+```
+cd sunxi-mali/
+git submodule init
+git submodule update
+git pull
+wget http://pastebin.com/raw.php?i=hHKVQfrh -O ./include/GLES2/gl2.h
+wget http://pastebin.com/raw.php?i=ShQXc6jy -O ./include/GLES2/gl2ext.h
+make config ABI=armhf VERSION=r3p0
+mkdir /usr/lib/mali
+echo "/usr/lib/mali" > /etc/ld.so.conf.d/1-mali.conf
+make -C include install
+make -C lib/mali prefix=/usr libdir='$(prefix)/lib/mali/' install
+```
+Test
+```
+es2gears
+```
+
+## Install fbturbo driver 
+Install dependencies
+```
+apt install git build-essential xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake 
+```
+Build driver
+```
+git clone -b 0.4.0 https://github.com/ssvb/xf86-video-fbturbo.git
+cd xf86-video-fbturbo
+autoreconf -vi
+./configure --prefix=/usr
+make
+make install
+cd ..
+```
+Configure Xorg Server
+```
+cp xorg.conf /etc/X11/xorg.conf.d/99-sunxifbturbo.conf
+```
+To verify, check if the correct driver (`FBTURBO`) is loaded in `/var/log/Xorg.0.log`
+```
+...
+(II) Module fbturbo: vendor="X.Org Foundation"
+   compiled for 1.12.4, module version = 0.4.0
+   Module class: X.Org Video Driver
+   ABI class: X.Org Video Driver, version 12.1
+(II) FBTURBO: driver for framebuffer: fbturbo
+(--) using VT number 7
+...
+```
+## NOT SURE IF NEEDED  Compile glshim
+```
+git clone https://github.com/ptitSeb/glshim
+cd glshim
+cmake .
+make
+cp lib/libGL.so.1 /usr/lib/
+cd ..
+```
+
+
 
 ### Source:
 * https://github.com/mripard/sunxi-mali
 * https://github.com/mripard/sunxi-mali/issues/34
-
+* http://linux-sunxi.org/Xorg#fbturbo_driver
 
 # Configuration
 ## Harden security
@@ -176,21 +279,18 @@ apt-get update
 Install plex and start the service as plex user
 ```
 apt-get install plexmediaserver-installer
-service plexmediaserver restart
-```
-Set up plex remotely by creating a ssh tunnel between kiska and the computer
+service plexmediaserver start
+```apt 
+
+## Remote config
+To set up plex remotely, create a ssh tunnel between the server and the host:
 ```
 ssh 137.229.94.163 -L 8888:localhost:32400
 ```
 In a webbrowser, configure plex media server at 'localhost:8888/web'
 
-Symlink `libGLESv2` and `libBEGL` to `/usr/bin`
-```
-ln -s /usr/lib/arm-linux-gnueabihf/libGLESv2.so /usr/bin
-ln -s /usr/lib/arm-linux-gnueabihf/libEGL.so /usr/bin
-```
-# Install Plex Media Player
-https://github.com/plexinc/plex-media-player
+### Sources
+* https://github.com/plexinc/plex-media-player
 
 ### SD card as storage
 Format SD card as f2fs
@@ -212,26 +312,9 @@ chown root:users /mnt/data -R
 chmod 775 /mnt/data/ -R
 ```
 
-#
-
-
-
-
-### Add file to server
-Create ssh tunnel between kiska and computer
-```
-ssh 137.229.94.163 -L 8888:localhost:32400
-```
-In a webbroser
-```
-localhost:8888/web
-```
-
-
 # Source
 * https://diyprojects.io/orange-pi-plus-2e-unpacking-installing-armbian-emmc-memory/
 
-# Remote X11 connection
 
 ## Compile libvdpau-sunxi
 Install dependencies
