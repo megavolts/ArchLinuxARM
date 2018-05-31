@@ -86,7 +86,7 @@ Change `drmP.h` into `<drm/drmP.h>` in mali/mali_drv.c
 
 ```
 make KDIR=/usr/src/linux-source-4.14.18-sunxi ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
-
+```
 
 ## Install dri2
 ```
@@ -241,7 +241,7 @@ exec pekwm
 ## Install PlexMediaPlayer
 Install dependencies
 ```
-apt install autoconf automake libtool libharfbuzz-dev libfreetype6-dev libfontconfig1-dev libx11-dev libxrandr-dev libvdpau-dev libva-dev mesa-common-dev libegl1-mesa-dev yasm libasound2-dev libpulse-dev libuchardet-dev zlib1g-dev libfribidi-dev git libgl1-mesa-dev libsdl2-dev cmake libgnutls-28dev libgnutls30
+apt install autoconf automake libtool libharfbuzz-dev libfreetype6-dev libfontconfig1-dev libx11-dev libxrandr-dev libvdpau-dev libva-dev mesa-common-dev libegl1-mesa-dev yasm libasound2-dev libpulse-dev libuchardet-dev zlib1g-dev libfribidi-dev git libgl1-mesa-dev libsdl2-dev cmake libgnutls28-dev libgnutls30
 ```
 Compile and install mpv and ffmpeg
 ```
