@@ -9,7 +9,7 @@ Compile and install mpv and ffmpeg
 git clone https://github.com/mpv-player/mpv-build.git
 cd mpv-build
 echo --enable-libmpv-shared > mpv_options
-./rebuild -j4 (this steps checks out all sources and compiles them and takes a while)
+./rebuild -j4
 ./install
 ldconfig
 cd ..
