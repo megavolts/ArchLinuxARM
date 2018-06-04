@@ -31,8 +31,49 @@ apt update
 apt upgrade
 reboot
 ```
+# Minimal working graphical servder (XFCE)
+```
+apt-get install xinit xserver-xorg xfwm4 xfce4-session xfce4-panel xfce4-settings  xfce4-terminal xfdesktop4  tango-icon-theme
+```
+Create minimal xinitrc
+```
+echo "exec startxfce4" >> /home/megavolts/.xinitrc
+apt install xserver-xorg-legacy
+echo "needs_root_rights=yes" /etc/X11/Xwrapper.config
+```
 
-# Mali driver
+# Install fbturbo driver 
+Install dependencies
+```
+apt install git build-essential xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake 
+```
+Build driver
+```
+git clone -b 0.4.0 https://github.com/ssvb/xf86-video-fbturbo.git
+cd xf86-video-fbturbo
+autoreconf -vi
+./configure --prefix=/usr
+make
+make install
+cd ..
+```
+Configure Xorg Server
+```
+cp xorg.conf /etc/X11/xorg.conf.d/99-sunxifbturbo.conf
+```
+To verify, check if the correct driver (`FBTURBO`) is loaded in `/var/log/Xorg.0.log`
+```
+...
+(II) Module fbturbo: vendor="X.Org Foundation"
+   compiled for 1.12.4, module version = 0.4.0
+   Module class: X.Org Video Driver
+   ABI class: X.Org Video Driver, version 12.1
+(II) FBTURBO: driver for framebuffer: fbturbo
+(--) using VT number 7
+...
+```
+
+# Mali driver NO NEED
 ```
 apt get install mesa-utils mesa-utils-extra
 ```
@@ -136,36 +177,6 @@ Test
 es2gears
 ```
 
-## Install fbturbo driver 
-Install dependencies
-```
-apt install git build-essential xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool automake 
-```
-Build driver
-```
-git clone -b 0.4.0 https://github.com/ssvb/xf86-video-fbturbo.git
-cd xf86-video-fbturbo
-autoreconf -vi
-./configure --prefix=/usr
-make
-make install
-cd ..
-```
-Configure Xorg Server
-```
-cp xorg.conf /etc/X11/xorg.conf.d/99-sunxifbturbo.conf
-```
-To verify, check if the correct driver (`FBTURBO`) is loaded in `/var/log/Xorg.0.log`
-```
-...
-(II) Module fbturbo: vendor="X.Org Foundation"
-   compiled for 1.12.4, module version = 0.4.0
-   Module class: X.Org Video Driver
-   ABI class: X.Org Video Driver, version 12.1
-(II) FBTURBO: driver for framebuffer: fbturbo
-(--) using VT number 7
-...
-```
 ## NOT SURE IF NEEDED  Compile glshim
 ```
 git clone https://github.com/ptitSeb/glshim
@@ -273,14 +284,14 @@ cd ..
 Add the repositories and key, as root:
 ```
 wget -O - https://dev2day.de/pms/dev2day-pms.gpg.key | sudo apt-key add -
-echo "deb https://dev2day.de/pms/ stretch main" | sudo tee /etc/apt/sources.list.d/pms.list
+echo "deb https://dev2day.de/pms/ buster main" | sudo tee /etc/apt/sources.list.d/pms.list
 apt-get update
 ```
 Install plex and start the service as plex user
 ```
 apt-get install plexmediaserver-installer
 service plexmediaserver start
-```apt 
+```
 
 ## Remote config
 To set up plex remotely, create a ssh tunnel between the server and the host:
@@ -315,8 +326,7 @@ chmod 775 /mnt/data/ -R
 # Source
 * https://diyprojects.io/orange-pi-plus-2e-unpacking-installing-armbian-emmc-memory/
 
-
-## Compile libvdpau-sunxi
+# Install libdvpau-sunxi
 Install dependencies
 ```
 apt install libpixman-1-dev
@@ -340,8 +350,46 @@ git clone https://github.com/linux-sunxi/libvdpau-sunxi.git
 cd libvdpau-sunxi
 make
 make install
-ln -s /usr/lib/arm-linux-gnueabihf/vdpau/libvdpau_sunxi.so.1 /usr/lib/libvdpau_nvidia.so
-
+ldconfig
+# ln -s /usr/lib/arm-linux-gnueabihf/vdpau/libvdpau_sunxi.so.1 /usr/lib/libvdpau_nvidia.so
 cd ..
+```
+
+
+# Autologin
+```
+apt install lightdm
+```
+
+/etc/lightdm/lightdm.conf
+```
+[Seat:*]
+pam-service=lightdm
+pam-autologin-service=lightdm-autologin
+autologin-user=username
+autologin-user-timeout=0
+autologin-session=xfce
+session-wrapper=/etc/X11/Xsession
+greeter-session=lightdm-greeter
+```
+LightDM goes through PAM even when autologin is enabled. You must be part of the autologin group to be able to login automatically without entering your password:
+```
+groupadd -r autologin
+gpasswd -a username autologin
+```
+Enabling interactive passwordless login
+
+LightDM goes through PAM so you must configure the lightdm configuration of PAM: `/etc/pam.d/lightdm`
+```
+#%PAM-1.0
+auth        sufficient  pam_succeed_if.so user ingroup nopasswdlogin
+auth        include     system-login
+...
+```
+You must then also be part of the nopasswdlogin group to be able to login interactively without entering your password:
+
+```
+groupadd -r nopasswdlogin
+gpasswd -a username nopasswdlogin
 ```
 
