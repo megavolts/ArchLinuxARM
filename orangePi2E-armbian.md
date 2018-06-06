@@ -83,6 +83,7 @@ Install linux sources and unpack them, for 4.14.18 kernel
 apt install linux-source-4.14.18-next-sunxi quilt
 mkdir /usr/src/linux-source-4.14.18-sunxi
 tar -xf /usr/src/linux-source-4.14.18-sunxi.tar.xz -C /usr/src/linux-source-4.14.18-sunxi
+ln -s /usr/src/linux-headers-4.14.18-sunxi /usr/src/linux-source-4.14.18-sunxi
 ```
 Check kernel version in `/usr/src/linux-source-4.14.18-sunxi/include/generated/utsrelease.h` and '`/usr/src/linux-source-4.14.18-sunxi/include/config/kernel.release`. It should match the kernel version `4.14.18-sunxi`, otherwise modify it.
 
@@ -92,9 +93,7 @@ cd ~
 git clone https://github.com/mripard/sunxi-mali.git
 cd sunxi-mali
 ./build.sh -r r6p2 -a
-export KDIR=
-export INSTALL_MOD_)PA
-make -j 4 USING_UMP=1 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-source-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=/lib/modules/4.14.18-sunxi/extra/ -C r6p2/src/devicedrv/mali/
+make JOBS=4 USING_UMP=1 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-source-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=/lib/modules/4.14.18-sunxi/extra/ -C r6p2/src/devicedrv/mali/
 make JOBS=4 USING_UMP=1 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-source-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=/lib/modules/4.14.18-sunxi/extra/ -C ~/sunxi-mali/r6p2/src/devicedrv/mali install
 ```
 Load the module
