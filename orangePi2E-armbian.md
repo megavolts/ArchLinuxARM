@@ -80,10 +80,10 @@ grep 'CONFIG_DMA_CMA' /boot/config-$(uname -r)
 ```
 Install linux sources and unpack them, for 4.14.18 kernel
 ```
-apt install linux-source-4.14.18-next-sunxi quilt
+apt install linux-headers-next-sunxi linux-source-4.14.18-next-sunxi quilt
 mkdir /usr/src/linux-source-4.14.18-sunxi
 tar -xf /usr/src/linux-source-4.14.18-sunxi.tar.xz -C /usr/src/linux-source-4.14.18-sunxi
-ln -s /usr/src/linux-headers-4.14.18-sunxi /usr/src/linux-source-4.14.18-sunxi
+cp -v /usr/src/linux-headers-4.14.18-sunxi/* /usr/src/linux-source-4.14.18-sunxi/
 ```
 Check kernel version in `/usr/src/linux-source-4.14.18-sunxi/include/generated/utsrelease.h` and '`/usr/src/linux-source-4.14.18-sunxi/include/config/kernel.release`. It should match the kernel version `4.14.18-sunxi`, otherwise modify it.
 
@@ -93,8 +93,8 @@ cd ~
 git clone https://github.com/mripard/sunxi-mali.git
 cd sunxi-mali
 ./build.sh -r r6p2 -a
-make JOBS=4 USING_UMP=1 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-source-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=/lib/modules/4.14.18-sunxi/extra/ -C r6p2/src/devicedrv/mali/
-make JOBS=4 USING_UMP=1 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-source-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=/lib/modules/4.14.18-sunxi/extra/ -C ~/sunxi-mali/r6p2/src/devicedrv/mali install
+make JOBS=4 USING_UMP=0 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-source-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- -C ~/sunxi-mali/r6p2/src/devicedrv/mali
+make JOBS=4 USING_UMP=0 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-source-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- -C ~/sunxi-mali/r6p2/src/devicedrv/mali install
 ```
 Load the module
 ```
@@ -155,7 +155,7 @@ auth        include     system-login
 ### Install testing tools
 Install testing tools
 ```
-apt install mesa-utils mesa-utils-extra
+apt install mesa-utils mesa-utils-extras
 ```
 To verify, check if the correct driver (`FBTURBO`) is loaded in `/var/log/Xorg.0.log` in a X session
 ```
@@ -178,7 +178,7 @@ glxinfos
 
 ## Essential packages
 ```
-apt-get install mlocate firefox-esr
+apt install mlocate firefox-esr
 updatedb
 ```
 
@@ -203,7 +203,7 @@ reboot
 ## Install libdvpau-sunxi
 Install dependencies
 ```
-apt install libpixman-1-dev
+apt install libpixman-1-dev libvdpau-dev
 ```
 Compile libcedrus
 ```
@@ -225,7 +225,7 @@ cd libvdpau-sunxi
 make
 make install
 ldconfig
-# ln -s /usr/lib/arm-linux-gnueabihf/vdpau/libvdpau_sunxi.so.1 /usr/lib/libvdpau_nvidia.so
+ln -s /usr/lib/arm-linux-gnueabihf/vdpau/libvdpau_sunxi.so.1 /usr/lib/libvdpau_nvidia.so
 cd ..
 ```
 
