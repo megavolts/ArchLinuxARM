@@ -245,32 +245,19 @@ ldconfig
 cd ..
 ```
 Install Qt5>5.10
+```
+apt-get install build-essential libfontconfig1-dev libdbus-1-dev libfreetype6-dev libicu-dev libinput-dev libxkbcommon-dev libsqlite3-dev libssl-dev libpng-dev libjpeg-dev libglib2.0-dev
+```
 Download and extract the source for QT5
 ```
 wget http://download.qt.io/official_releases/qt/5.10/5.10.0/single/qt-everywhere-src-5.10.0.tar.xz
 tar xf qt-everywhere-src-5.10.0.tar.xz
+cd /tmp/qt-everywhere-opensource-src-%VERSION%
+./configure
 mkdir build && cd build
-```
-Install build-depencies
-```
-apt-get install build-essential libfontconfig1-dev libdbus-1-dev libfreetype6-dev libicu-dev libinput-dev libxkbcommon-dev libsqlite3-dev libssl-dev libpng-dev libjpeg-dev libglib2.0-dev
-```
-Configure with the following option:
-```
-PKG_CONFIG_LIBDIR=/usr/lib/arm-linux-gnueabihf/pkgconfig PKG_CONFIG_SYSROOT_DIR=/ ../qt-everywhere-src-5.10.0/configure -v -opengl es2 -eglfs -device-option CROSS_COMPILE=/usr/bin/ -opensource -confirm-license -release -reduce-exports -force-pkg-config -nomake examples -no-compile-examples -skip qtwayland -no-feature-geoservices_mapboxgl -qt-pcre -ssl -evdev -system-freetype -fontconfig -glib -prefix /opt/Qt5.10
-```
-"http://linux-sunxi.org/Qt5_For_Mali_Binaries"
-
-PKG_CONFIG_LIBDIR=/usr/lib/arm-linux-gnueabihf/pkgconfig PKG_CONFIG_SYSROOT_DIR=/ ../qt-everywhere-src-5.10.0/configure -v -debug -opensource -confirm-license -no-use-gold-linker -nomake examples -nomake tests -nomake tools -no-cups -no-pch -no-linuxfb -skip qtquick1 -skip declarative -skip multimedia -opengl es2 -eglfs -system-xcb -system-zlib -device linux-sunxi-g++ -device-option CROSS_COMPILE=arm-linux-gnueabihf- -release -configm-license -ssl -prefix /opt/qt/sunxi
-
-
-
-Compile and install
-```
-make -j4
+make
 make install
 ```
-
 Install qt5-dependencies
 ```
 apt install qt5-default qtwebengine5-dev libqt5webchannel5-dev libqt5x11extras5-dev qtwebengine5-dev qml-module-qtquick-controls qml-module-qtwebengine qml-module-qtwebchannel libqt5sensors5-dev qt[psotopmomg5-dev 
