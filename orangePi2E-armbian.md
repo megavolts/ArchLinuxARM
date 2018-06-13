@@ -48,7 +48,7 @@ Then reboot
 ## Install graphic server with mali kernel driver
 Install dependencies
 ```
-apt install xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool linux-headers-next-sunxi
+apt install xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool
 ```
 To compile `mali` with `USING_UMP=1`, `libump` and its dependencies `dri2` are needed
 ### dri2
