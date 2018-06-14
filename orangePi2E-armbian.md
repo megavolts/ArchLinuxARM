@@ -95,9 +95,11 @@ cd sunxi-mali
 ./build.sh -r r6p2 -a
 make JOBS=4 USING_UMP=0 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-source-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- -C ~/sunxi-mali/r6p2/src/devicedrv/mali
 make JOBS=4 USING_UMP=0 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-source-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- -C ~/sunxi-mali/r6p2/src/devicedrv/mali install
+cd..
 ```
 Load the module
 ```
+depmod
 modprobe mali
 ```
 Copy the blob 
@@ -105,6 +107,13 @@ Copy the blob
 git clone https://github.com/free-electrons/mali-blobs.git
 cd mali-blobs
 cp -a r6p2/fbdev/lib/lib_fb_dev/lib* /usr/lib
+cd ..
+```
+Set permission to mali:
+```
+echo "KERNEL==\"mali\", MODE=\"0660\", GROUP=\"video\"" > /etc/udev/rules.d/50-mali.rules
+echo "KERNEL==\"disp\", MODE=\"0660\", GROUP=\"video\"" > /etc/udev/rules.d/50-disp.rules
+
 ```
 
 ### Install fbturbo driver 
@@ -124,6 +133,15 @@ cp xorg.conf /etc/X11/xorg.conf.d/99-sunxifbturbo.conf
 cd ..
 ```
 
+### Fix EGL and GLX
+Copy the good library version
+```
+ln -s /usr/lib/libEGL.so /usr/lib/arm-linux-gnueabihf/libEGL.so
+ln -fs /usr/lib/libEGL.so.1 /usr/lib/arm-linux-gnueabihf/libEGL.so.1
+ln -fs /usr/lib/libGLESv2.so /usr/lib/arm-linux-gnueabihf/
+ln -fs /usr/lib/libGLESv2.so.2 /usr/lib/arm-linux-gnueabihf/
+```
+
 ### Install minimal XFCE
 ```
 apt install xinit xserver-xorg xfwm4 xfce4-session xfce4-panel xfce4-settings  xfce4-terminal xfdesktop4  tango-icon-theme lightdm
@@ -137,11 +155,11 @@ pam-autologin-service=lightdm-autologin
 autologin-user=megavolts
 autologin-user-timeout=0
 autologin-session=xfce
-session-wrapper=/etc/X11/Xsession
 ```
 LightDM goes through PAM even when autologin is enabled. You must be part of the autologin group to be able to login automatically without entering your password:
 ```
 groupadd -r autologin
+usermod -a -G autologin megavolts
 ```
 Enabling interactive passwordless login, by configure PAM of lightdm `/etc/pam.d/lightdm`
 ```
@@ -155,7 +173,7 @@ auth        include     system-login
 ### Install testing tools
 Install testing tools
 ```
-apt install mesa-utils mesa-utils-extras
+apt install mesa-utils mesa-utils-extra
 ```
 To verify, check if the correct driver (`FBTURBO`) is loaded in `/var/log/Xorg.0.log` in a X session
 ```
