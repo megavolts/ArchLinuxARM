@@ -48,7 +48,7 @@ Then reboot
 ## Install graphic server with mali kernel driver
 Install dependencies
 ```
-apt install xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool
+apt install xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool libltdl-dev libtool automake libdrm-dev
 ```
 To compile `mali` with `USING_UMP=1`, `libump` and its dependencies `dri2` are needed
 ### dri2
@@ -63,15 +63,27 @@ ldconfig
 cd ..
 ```
 ### libump
+Download sources
 ```
 git clone https://github.com/linux-sunxi/libump
 cd libump/
+```
+Build using `dpkg-buildpackage`
+```
+apt install autoconf libtool build-essential debhelper
+dpkg-buildpackage -b
+cd ..
+apt install ./libump...
+```
+or 
+```
 autoreconf -i
 ./configure --prefix=/usr
 make
 make install
 cd ..
 ```
+
 ### Mali driver
 Check if `CONFIG_CMA` and `CONFIG_DMA_CMA` are enabled in the kernel with
 ```
@@ -83,7 +95,7 @@ Install linux sources and unpack them, for 4.14.18 kernel
 apt install linux-headers-next-sunxi linux-source-4.14.18-next-sunxi quilt
 mkdir /usr/src/linux-source-4.14.18-sunxi
 tar -xf /usr/src/linux-source-4.14.18-sunxi.tar.xz -C /usr/src/linux-source-4.14.18-sunxi
-cp -v /usr/src/linux-headers-4.14.18-sunxi/* /usr/src/linux-source-4.14.18-sunxi/
+cp -r /usr/src/linux-headers-4.14.18-sunxi/* /usr/src/linux-source-4.14.18-sunxi/
 ```
 Check kernel version in `/usr/src/linux-source-4.14.18-sunxi/include/generated/utsrelease.h` and '`/usr/src/linux-source-4.14.18-sunxi/include/config/kernel.release`. It should match the kernel version `4.14.18-sunxi`, otherwise modify it.
 
@@ -93,9 +105,9 @@ cd ~
 git clone https://github.com/mripard/sunxi-mali.git
 cd sunxi-mali
 ./build.sh -r r6p2 -a
-make JOBS=4 USING_UMP=0 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-source-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- -C ~/sunxi-mali/r6p2/src/devicedrv/mali
+make JOBS=4 USING_UMP=1 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-source-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- -C ~/sunxi-mali/r6p2/src/devicedrv/mali
 make JOBS=4 USING_UMP=0 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-source-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- -C ~/sunxi-mali/r6p2/src/devicedrv/mali install
-cd..
+cd ..
 ```
 Load the module
 ```
@@ -111,9 +123,7 @@ cd ..
 ```
 Set permission to mali:
 ```
-echo "KERNEL==\"mali\", MODE=\"0660\", GROUP=\"video\"" > /etc/udev/rules.d/50-mali.rules
-echo "KERNEL==\"disp\", MODE=\"0660\", GROUP=\"video\"" > /etc/udev/rules.d/50-disp.rules
-
+echo "KERNEL==\"mali\", MODE=\"0775\", GROUP=\"video\"" > /etc/udev/rules.d/50-mali.rules
 ```
 
 ### Install fbturbo driver 
@@ -144,8 +154,8 @@ ln -fs /usr/lib/libGLESv2.so.2 /usr/lib/arm-linux-gnueabihf/
 
 ### Install minimal XFCE
 ```
-apt install xinit xserver-xorg xfwm4 xfce4-session xfce4-panel xfce4-settings  xfce4-terminal xfdesktop4  tango-icon-theme lightdm
-systemctl enable lightdm libgl1-mesa-dri
+apt install xinit xserver-xorg xfwm4 xfce4-session xfce4-panel xfce4-settings  xfce4-terminal xfdesktop4  tango-icon-theme lightdm xfonts-base
+systemctl enable lightdm
 ```
 To set up autologin with lightdm, modify `/etc/lightdm/lightdm.conf`
 ```
