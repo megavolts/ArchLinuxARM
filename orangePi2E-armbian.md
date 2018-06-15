@@ -48,9 +48,10 @@ Then reboot
 ## Install graphic server with mali kernel driver
 Install dependencies
 ```
-apt install xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool libltdl-dev libtool automake libdrm-dev
+apt install xorg-dev xutils-dev x11proto-dri2-dev libltdl-dev libtool libltdl-dev libtool automake libdrm-dev libgl1-mesa-dri mesa-utils mesa-utils-extra mesa-common-dev libegl1-mesa-dev libxrandr-dev libx11-dev libgl1-mesa-dev
 ```
-To compile `mali` with `USING_UMP=1`, `libump` and its dependencies `dri2` are needed
+To compile `mali` with `USING_UMP=0`, `libump` and its dependencies `dri2` are needed
+
 ### dri2
 ```
 git clone https://github.com/robclark/libdri2
@@ -62,6 +63,7 @@ make install
 ldconfig
 cd ..
 ```
+
 ### libump
 Download sources
 ```
@@ -73,7 +75,7 @@ Build using `dpkg-buildpackage`
 apt install autoconf libtool build-essential debhelper
 dpkg-buildpackage -b
 cd ..
-apt install ./libump...
+apt install ./libump*...
 ```
 or 
 ```
@@ -119,11 +121,12 @@ Copy the blob
 git clone https://github.com/free-electrons/mali-blobs.git
 cd mali-blobs
 cp -a r6p2/fbdev/lib/lib_fb_dev/lib* /usr/lib
+cp -a r6p2/fbdev/lib/lib_fb_dev/lib* /usr/lib/arm-linux-gnueabihf
 cd ..
 ```
 Set permission to mali:
 ```
-echo "KERNEL==\"mali\", MODE=\"0775\", GROUP=\"video\"" > /etc/udev/rules.d/50-mali.rules
+echo "KERNEL==\"mali\", MODE=\"0660\", GROUP=\"video\"" > /etc/udev/rules.d/50-mali.rules
 ```
 
 ### Install fbturbo driver 
@@ -143,15 +146,6 @@ cp xorg.conf /etc/X11/xorg.conf.d/99-sunxifbturbo.conf
 cd ..
 ```
 
-### Fix EGL and GLX
-Copy the good library version
-```
-ln -s /usr/lib/libEGL.so /usr/lib/arm-linux-gnueabihf/libEGL.so
-ln -fs /usr/lib/libEGL.so.1 /usr/lib/arm-linux-gnueabihf/libEGL.so.1
-ln -fs /usr/lib/libGLESv2.so /usr/lib/arm-linux-gnueabihf/
-ln -fs /usr/lib/libGLESv2.so.2 /usr/lib/arm-linux-gnueabihf/
-```
-
 ### Install minimal XFCE
 ```
 apt install xinit xserver-xorg xfwm4 xfce4-session xfce4-panel xfce4-settings  xfce4-terminal xfdesktop4  tango-icon-theme lightdm xfonts-base
@@ -162,6 +156,7 @@ To set up autologin with lightdm, modify `/etc/lightdm/lightdm.conf`
 [Seat:*]
 pam-service=lightdm
 pam-autologin-service=lightdm-autologin
+session-wrapper=/etc/X11/Xsession
 autologin-user=megavolts
 autologin-user-timeout=0
 autologin-session=xfce
@@ -179,13 +174,7 @@ auth        sufficient  pam_succeed_if.so user ingroup autologin
 auth        include     system-login
 ...
 ```
-
-### Install testing tools
-Install testing tools
-```
-apt install mesa-utils mesa-utils-extra
-```
-To verify, check if the correct driver (`FBTURBO`) is loaded in `/var/log/Xorg.0.log` in a X session
+Then reboot. To verify, check if the correct driver (`FBTURBO`) is loaded in `/var/log/Xorg.0.log` in a X session
 ```
 ...
 (II) Module fbturbo: vendor="X.Org Foundation"
@@ -196,7 +185,7 @@ To verify, check if the correct driver (`FBTURBO`) is loaded in `/var/log/Xorg.0
 (--) using VT number 7
 ...
 ```
-Check glx and es acceleration with
+Check and es acceleration with
 ```
 es2gears
 glxgears
@@ -209,23 +198,6 @@ glxinfos
 apt install mlocate firefox-esr
 updatedb
 ```
-
-## Update system to buser
-Change debian version from `stretch` to `buster` to enable qt5 => 5.9
-```
-nano -w /etc/apt/sources.list
------------------------------
-deb http://httpredir.debian.org/debian buster main contrib non-free
-deb http://httpredir.debian.org/debian buster-updates main contrib non-free
-deb http://security.debian.org/ buster/updates main contrib non-free
-```
-Then update the system
-```
-apt update
-apt upgrade
-reboot
-```
-
 
 # Media Center
 ## Install libdvpau-sunxi
@@ -255,12 +227,11 @@ make install
 ldconfig
 ln -s /usr/lib/arm-linux-gnueabihf/vdpau/libvdpau_sunxi.so.1 /usr/lib/libvdpau_nvidia.so
 cd ..
-```
-
+``` 
 ## Install PlexMediaPlayer
 Install dependencies
 ```
-apt install autoconf automake libtool libharfbuzz-dev libfreetype6-dev libfontconfig1-dev libx11-dev libxrandr-dev libvdpau-dev libva-dev mesa-common-dev libegl1-mesa-dev yasm libasound2-dev libpulse-dev libuchardet-dev zlib1g-dev libfribidi-dev git libgl1-mesa-dev libsdl2-dev cmake libgnutls28-dev libgnutls30
+apt install autoconf automake libtool libharfbuzz-dev libfreetype6-dev libfontconfig1-dev   libvdpau-dev libva-dev  yasm libasound2-dev libpulse-dev libuchardet-dev zlib1g-dev libfribidi-dev git  libsdl2-dev cmake libgnutls28-dev libgnutls30
 ```
 Compile and install mpv and ffmpeg
 ```
