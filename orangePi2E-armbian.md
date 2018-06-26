@@ -360,3 +360,21 @@ cd ..
 ttf-dejavu 
 ttf-dejavu 
 ttf-dejavu libgl1-mesa-dri
+
+# Create Plex User
+```
+useradd -m -g users -G autologin,audio -s /bin/sh plex
+usermod -a -G autologin plex
+passwd plex
+113Roxie
+```
+Change plex direcotry from `/var/lib/plexmediaplayer` to `/home/plex` in `/etc/passwd` and move the entire directory
+```
+mv -v /var/lib/plexmediaplayer/* /home/plex/
+```
+Modify autologin in `/etc/lightdm/lightdm.conf`
+```
+autologin-user=plex
+```
+
+
