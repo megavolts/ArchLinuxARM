@@ -377,4 +377,26 @@ Modify autologin in `/etc/lightdm/lightdm.conf`
 autologin-user=plex
 ```
 
+# Optimize chromium
+## Install profile-sync-daemon
+As root
+```
+apt install profile-sync-daemon
+```
+As `plex`, enable `chromium` and backup recovery in `home/plex/.config/psd/psd.conf`
+```
+USE_OVERLAYFS="yes"
+BROWSERS="chromium"
+USE_BACKUPS="yes"
+BACKUP_LIMIT=5
+```
+Allow `plex` to `run psd-overlay-helper` as `root` without passowrd, modify `/etc/sudoers`:
+```
+plex ALL=(ALL) NOPASSWD: /usr/bin/psd-overlay-helper
+```
 
+Then start and test `'psd
+```
+systemctl --user start psd.service
+psd -p
+```
