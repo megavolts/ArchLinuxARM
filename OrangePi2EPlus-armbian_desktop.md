@@ -79,9 +79,12 @@ Set `plex` as autologin by default in `nano /etc/default/nodm`
 NODM_USER=plex
 ```
 
-## Firefox optimization
-## Install profile-sync-daemon
-As root
+## Webbroser optimization
+Install webbrowser
+```
+apt install firefox-esr midori
+```
+Install profile-sync-daemon
 ```
 apt install profile-sync-daemon
 ```
@@ -100,7 +103,122 @@ plex ALL=(ALL) NOPASSWD: /usr/bin/psd-overlay-helper
 Then start and test `'psd
 ```
 systemctl --user start psd.service
-psd -p
+psd p
+```
+
+# Configure AP/router
+```
+apt install hostapd dnsmasq bridge-utils
+```
+## Network interfaces
+* bridge `br0` between `eth0` and `wlan0`
+* NAT between `usb0` and `br0`
+Edit `/etc/network/interfaces`:
+```
+source /etc/network/interfaces.d/*
+
+# Wired adapter #1
+auto eth0
+allow-hotplug eth0
+no-auto-down eth0
+iface eth0 inet manual
+
+# Wireless adapter #1
+auto wlan0
+allow-hotplug wlan0
+no-auto-down wlan0
+iface wlan0 inet manual
+
+# Thethered usb connection
+auto usb0
+allow-hotplug usb0
+iface usb0 inet dhcp
+
+# Local loopback
+auto lo
+iface lo inet loopback
+
+# Bridge br0: eth0 <-> wlan0
+auto br0
+iface br0 inet manual
+        bridge_ports eth0 wlan0
+        address 10.0.0.1
+        netmask 255.255.255.0
+
+pre-up iptables-restore < /etc/iptables.rules.usb0
+        
+```
+Restart network
+```
+systemctl restart networking
+```
+
+## Hostpad
+Adjust the option in `/etc/hostapd.conf`, especially `ssid` and `wpa_passphrase`:
+```
+interface=wlan0
+bridge=br0
+
+ssid=RedTrimCabin
+driver=nl80211
+
+hw_mode=g
+channel=2
+
+wpa=2
+auth_algs=1
+
+rsn_pairwise=CCMP
+wpa_key_mgmt=WPA-PSK
+wpa_passphrase=113Roxie          
+```
+Start and enable on success `hostapd.service`
+```
+systemctl start hostapd
+systemctl enable hostapd
+```
+
+## Configure dnsmasq
+Adjust the option in `/etc/dnsmasq.conf`, especially `interface` and `dhcp-range`:
+```
+interface=br0
+dhcp-range=10.0.0.2,10.0.0.22,255.255.255.0,24h
+```
+If needed reserve some IP, in `/etc/dnsmas.conf
+```
+# IP reservation
+# ip reserved
+# ulva, mediaserver
+dhcp-host=30:85:A9:3C:4F:FE,10.0.0.11
+```
+Start the service `dnsmasq` and enable on success
+```
+systemctl start dnsmasq
+systemctl enable dnsmasq
+```
+
+## Enable packet forwarding
+For ipv4:
+```
+systctl net.ipv4.ip_forward=1
+```
+And make the change persistant in `/etc/sysctl.d/30-ipforward.conf`
+```
+net.ipv4.ip_forward=1
+net.ipv6.conf.default.forwarding=1
+net.ipv6.conf.all.forwarding=1  
+```
+
+## Enable NAT:
+Add the following IP tables rules:
+```
+iptables -t nat -A POSTROUTING -o usb0 -j MASQUERADE
+iptables -A FORWARD -o usb0 -i br0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i br0 -o usb0 -j ACCEPT
+```
+Save the rules
+```
+iptables-save > /etc/iptables.rules
 ```
 
 
@@ -114,7 +232,6 @@ Add to mountfs:
 ```
 /dev/mmcblk0p1  /mnt/data       f2fs    defaults,nofail,x-systemd.device-timetout=1     0 2
 ```
-
 
 Give write permission to `/mnt/data` to the group users
 ```
@@ -135,5 +252,4 @@ chmod 775 /mnt/data/ -R
 
 # Source
 * https://diyprojects.io/orange-pi-plus-2e-unpacking-installing-armbian-emmc-memory/
-
 
