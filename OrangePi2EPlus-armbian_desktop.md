@@ -1,13 +1,11 @@
-* impossible to compile mali kernel driver *
-
-
-kiska
+# Properties
+* router + plex media player
+* hostanme: kiska
 * wlan0: HWMac 12:81:c6:e7:c5:62
-* etho0: HWMac 02:81:c6:e7:c5:62
-# 
+* eth0: HWMac 02:81:c6:e7:c5:62
+* Armbian: headless debian-bases server
 
 Image can be found at http://www.orangepi.org/downloadresources/.
-* Armbian: headless debian-bases server
 
 # Emmc installed
 Extract the archive
@@ -18,19 +16,20 @@ As root, copy image to SD card and sync
 ```
 sudo dd if=Armbian_5.38_Orangepiplus2e_Debian_stretch_next_4.14.14.img of=/dev/mmcblk0 && sync
 ```
-Boot the orangepi with the SD card. After login as root (root:1234), follow the initialisation step.
+Boot the orangepi with the SD card. After login as root (root:1234), follow the initialisation step and create `megavolts` user.
 
-Install os on the emmc with, and follow the instruction
-```
-sudo nand-sata-install
-```
-Turn off the Orange, remove the SD card from the drive, and turn on the Orange which will reboot to eMMC.
 Then update the system
 ```
 apt update
 apt upgrade
 reboot
 ```
+Install os on the emmc with, and follow the instruction
+```
+sudo nand-sata-install
+```
+Turn off the Orange, remove the SD card from the drive, and turn on the Orange which will reboot to eMMC.
+
 
 # Configuration
 ## armbian-config
@@ -41,9 +40,9 @@ armbian-config
 And follow the menu to:
 * System/Update firmware
 * System/SSH: set `PermitRootLogin` to `no`
+* System/minimal desktop (install minimal desktop with `plex` user autologin
 * Personal/Timezone: America/Anchorage
 * Personal/Hostaneme: kiska
-* .../minimal desktop
 
 
 # Install PlexMediaServer
@@ -79,19 +78,19 @@ Set `plex` as autologin by default in `nano /etc/default/nodm`
 NODM_USER=plex
 ```
 
-## Webbroser optimization
-Install webbrowser
+## Firefox optimization
+Install webbrowser and profile sync daemon
 ```
-apt install firefox-esr midori
+apt install firefox-esr profile-sync-daemon
 ```
-Install profile-sync-daemon
+Run profile-sync-daemon
 ```
-apt install profile-sync-daemon
+psd
 ```
-As `plex`, enable `chromium` and backup recovery in `home/plex/.config/psd/psd.conf`
+As `plex`, enable `firefox` and backup recovery in `home/plex/.config/psd/psd.conf`
 ```
 USE_OVERLAYFS="yes"
-BROWSERS="chromium"
+BROWSERS="firefox"
 USE_BACKUPS="yes"
 BACKUP_LIMIT=5
 ```
@@ -104,6 +103,29 @@ Then start and test `'psd
 ```
 systemctl --user start psd.service
 psd p
+systemctl --user enable psd.service
+
+```
+Tweak firefox performance according to ArchLinux
+
+
+# SD card as storage
+Format SD card as f2fs
+```
+mkfs.f2fs /dev/mmcblk0p1 
+mkdir /mnt/data
+```
+Add to mountfs:
+```
+/dev/mmcblk0p1  /mnt/data       f2fs    defaults,nofail,x-systemd.device-timetout=1     0 2
+```
+
+Give write permission to `/mnt/data` to the group users
+```
+usermod -a -G users megavolts
+usermod -a -G users plex
+chown root:users /mnt/data -R
+chmod 775 /mnt/data/ -R
 ```
 
 # Configure AP/router
@@ -131,7 +153,6 @@ iface wlan0 inet manual
 
 # Thethered usb connection
 auto usb0
-allow-hotplug usb0
 iface usb0 inet dhcp
 
 # Local loopback
@@ -172,6 +193,10 @@ rsn_pairwise=CCMP
 wpa_key_mgmt=WPA-PSK
 wpa_passphrase=113Roxie          
 ```
+Uncomment in `/etc/default/hostapd`
+```
+DAEMON_CONF="/etc/hostapd.conf"
+```
 Start and enable on success `hostapd.service`
 ```
 systemctl start hostapd
@@ -181,13 +206,17 @@ systemctl enable hostapd
 ## Configure dnsmasq
 Adjust the option in `/etc/dnsmasq.conf`, especially `interface` and `dhcp-range`:
 ```
+domain-needed
+bogus-priv
+
+no-resolv
+no-poll
 interface=br0
 dhcp-range=10.0.0.2,10.0.0.22,255.255.255.0,24h
 ```
 If needed reserve some IP, in `/etc/dnsmas.conf
 ```
-# IP reservation
-# ip reserved
+# IP reserved
 # ulva, mediaserver
 dhcp-host=30:85:A9:3C:4F:FE,10.0.0.11
 ```
@@ -200,7 +229,7 @@ systemctl enable dnsmasq
 ## Enable packet forwarding
 For ipv4:
 ```
-systctl net.ipv4.ip_forward=1
+sysctl net.ipv4.ip_forward=1
 ```
 And make the change persistant in `/etc/sysctl.d/30-ipforward.conf`
 ```
@@ -218,31 +247,8 @@ iptables -A FORWARD -i br0 -o usb0 -j ACCEPT
 ```
 Save the rules
 ```
-iptables-save > /etc/iptables.rules
+iptables-save > /etc/iptables/iptables.hostapd
 ```
-
-
-# SD card as storage
-Format SD card as f2fs
-```
-mkfs.f2fs /dev/mmcblk0p1 
-mkdir /mnt/data
-```
-Add to mountfs:
-```
-/dev/mmcblk0p1  /mnt/data       f2fs    defaults,nofail,x-systemd.device-timetout=1     0 2
-```
-
-Give write permission to `/mnt/data` to the group users
-```
-usermod -a -G users megavolts
-usermod -a -G users plex
-chown root:users /mnt/data -R
-chmod 775 /mnt/data/ -R
-```
-
-
-
 
 ### Source:
 * https://github.com/mripard/sunxi-mali
