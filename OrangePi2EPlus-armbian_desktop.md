@@ -161,7 +161,7 @@ iface lo inet loopback
 
 # Bridge br0: eth0 <-> wlan0
 auto br0
-iface br0 inet manual
+iface br0 inet static
         bridge_ports eth0 wlan0
         address 10.0.0.1
         netmask 255.255.255.0
@@ -206,11 +206,10 @@ systemctl enable hostapd
 ## Configure dnsmasq
 Adjust the option in `/etc/dnsmasq.conf`, especially `interface` and `dhcp-range`:
 ```
-domain-needed
-bogus-priv
+# DNS server
+server=8.8.8.8.8
+server=8.8.4.4
 
-no-resolv
-no-poll
 interface=br0
 dhcp-range=10.0.0.2,10.0.0.22,255.255.255.0,24h
 ```
