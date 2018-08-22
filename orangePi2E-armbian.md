@@ -1,30 +1,17 @@
-* impossible to compile mali kernel driver *
-
-
-kiska
-* wlan0: HWMac 12:81:c6:e7:c5:62
-* etho0: HWMac 02:81:c6:e7:c5:62
-# 
-
+# Orange Pi 2E+
 Image can be found at http://www.orangepi.org/downloadresources/.
-* Armbian: headless debian-bases server
+* Armbian Stretch
 
 # Emmc installed
 Extract the archive
 ```
-7za e Armbian_5.38_Orangepiplus2e_Debian_stretch_next_4.14.14.7z
+7za e Armbian_5.59_Orangepiplus2e_Debian_stretch_next_4.14.65.7z  
 ```
 As root, copy image to SD card and sync
 ```
-sudo dd if=Armbian_5.38_Orangepiplus2e_Debian_stretch_next_4.14.14.img of=/dev/mmcblk0 && sync
+sudo dd if=Armbian_5.59_Orangepiplus2e_Debian_stretch_next_4.14.65.img of=/dev/mmcblk0 && sync
 ```
 Boot the orangepi with the SD card. After login as root (root:1234), follow the initialisation step.
-
-Install os on the emmc with, and follow the instruction
-```
-sudo nand-sata-install
-```
-Turn off the Orange, remove the SD card from the drive, and turn on the Orange which will reboot to eMMC.
 Then update the system
 ```
 apt update
@@ -44,6 +31,13 @@ And follow the menu to:
 * Personal/Timezone: America/Anchorage
 * Personal/Hostaneme: kiska
 Then reboot
+
+# Install on EMMC:
+Copy OS from SD to EMMC
+```
+sudo nand-sata-install
+```
+Turn off the Orange, remove the SD card from the drive, and turn on the Orange which will reboot to eMMC.
 
 ## Install graphic server with mali kernel driver
 Install dependencies
@@ -145,6 +139,13 @@ Configure Xorg Server
 cp xorg.conf /etc/X11/xorg.conf.d/99-sunxifbturbo.conf
 cd ..
 ```
+
+### Install minimal graphic interface
+Install xorg and pekwm as graphical interface
+```
+apt install xinit xserver-xorg nodm xfonts-base pekwm tint2
+```
+
 
 ### Install minimal XFCE
 ```
