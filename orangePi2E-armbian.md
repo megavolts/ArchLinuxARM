@@ -2,7 +2,7 @@
 Image can be found at http://www.orangepi.org/downloadresources/.
 * Armbian Stretch
 
-# Emmc installed
+# Install on SD
 Extract the archive
 ```
 7za e Armbian_5.59_Orangepiplus2e_Debian_stretch_next_4.14.65.7z  
@@ -32,7 +32,7 @@ And follow the menu to:
 * Personal/Hostaneme: kiska
 Then reboot
 
-# Install on EMMC:
+## Install on EMMC:
 Copy OS from SD to EMMC
 ```
 sudo nand-sata-install
@@ -88,7 +88,7 @@ grep 'CONFIG_DMA_CMA' /boot/config-$(uname -r)
 ```
 Install linux sources and unpack them, for 4.14.18 kernel
 ```
-apt install linux-headers-next-sunxi linux-source-4.14.18-next-sunxi quilt
+apt install linux-headers-next-sunxi linux-image-next-sunxi quilt
 mkdir /usr/src/linux-source-4.14.18-sunxi
 tar -xf /usr/src/linux-source-4.14.18-sunxi.tar.xz -C /usr/src/linux-source-4.14.18-sunxi
 cp -r /usr/src/linux-headers-4.14.18-sunxi/* /usr/src/linux-source-4.14.18-sunxi/
@@ -101,8 +101,8 @@ cd ~
 git clone https://github.com/mripard/sunxi-mali.git
 cd sunxi-mali
 ./build.sh -r r6p2 -a
-make JOBS=4 USING_UMP=1 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-source-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- -C ~/sunxi-mali/r6p2/src/devicedrv/mali
-make JOBS=4 USING_UMP=0 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-source-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- -C ~/sunxi-mali/r6p2/src/devicedrv/mali install
+make JOBS=4 USING_UMP=0 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-headers-4.14.66-sunxi/ CROSS_COMPILE=arm-linux-gnueabihf- -C /home/megavolts/mali/sunxi-mali/r6p2/src/devicedrv/mali
+make JOBS=4 USING_UMP=0 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-headers-4.14.66-sunxi/ CROSS_COMPILE=arm-linux-gnueabihf- -C /home/megavolts/mali/sunxi-mali/r6p2/src/devicedrv/mali install
 cd ..
 ```
 Load the module
@@ -143,39 +143,9 @@ cd ..
 ### Install minimal graphic interface
 Install xorg and pekwm as graphical interface
 ```
-apt install xinit xserver-xorg nodm xfonts-base pekwm tint2
+apt install xinit xserver-xorg nodm xfonts-base pekwm tint2 
 ```
-
-
-### Install minimal XFCE
-```
-apt install xinit xserver-xorg xfwm4 xfce4-session xfce4-panel xfce4-settings  xfce4-terminal xfdesktop4  tango-icon-theme lightdm xfonts-base
-systemctl enable lightdm
-```
-To set up autologin with lightdm, modify `/etc/lightdm/lightdm.conf`
-```
-[Seat:*]
-pam-service=lightdm
-pam-autologin-service=lightdm-autologin
-session-wrapper=/etc/X11/Xsession
-autologin-user=megavolts
-autologin-user-timeout=0
-autologin-session=xfce
-```
-LightDM goes through PAM even when autologin is enabled. You must be part of the autologin group to be able to login automatically without entering your password:
-```
-groupadd -r autologin
-usermod -a -G autologin megavolts
-```
-Enabling interactive passwordless login, by configure PAM of lightdm `/etc/pam.d/lightdm`
-```
-#%PAM-1.0
-# Allowing autologin group user to log without password
-auth        sufficient  pam_succeed_if.so user ingroup autologin
-auth        include     system-login
-...
-```
-Then reboot. To verify, check if the correct driver (`FBTURBO`) is loaded in `/var/log/Xorg.0.log` in a X session
+Check if the correct driver (`FBTURBO`) is loaded in `/var/log/Xorg.0.log` in a X session
 ```
 ...
 (II) Module fbturbo: vendor="X.Org Foundation"
@@ -232,7 +202,7 @@ cd ..
 ## Install PlexMediaPlayer
 Install dependencies
 ```
-apt install autoconf automake libtool libharfbuzz-dev libfreetype6-dev libfontconfig1-dev   libvdpau-dev libva-dev  yasm libasound2-dev libpulse-dev libuchardet-dev zlib1g-dev libfribidi-dev git  libsdl2-dev cmake libgnutls28-dev libgnutls30
+apt install autoconf automake libtool libharfbuzz-dev libfreetype6-dev libfontconfig1-dev libvdpau-dev libva-dev  yasm libasound2-dev libpulse-dev libuchardet-dev zlib1g-dev libfribidi-dev git libsdl2-dev cmake libgnutls28-dev libgnutls30
 ```
 Compile and install mpv and ffmpeg
 ```
@@ -244,24 +214,25 @@ echo --enable-libmpv-shared > mpv_options
 ldconfig
 cd ..
 ```
-Install Qt5>5.10
+Install Qt5.9.5
 ```
-apt-get install build-essential libfontconfig1-dev libdbus-1-dev libfreetype6-dev libicu-dev libinput-dev libxkbcommon-dev libsqlite3-dev libssl-dev libpng-dev libjpeg-dev libglib2.0-dev
+apt install build-essential libfontconfig1-dev libdbus-1-dev libfreetype6-dev libicu-dev libinput-dev libxkbcommon-dev libsqlite3-dev libssl-dev libpng-dev libjpeg-dev libglib2.0-dev libjpeg-dev libasound2-dev pulseaudio libpulse-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
 ```
+
+
 Download and extract the source for QT5
 ```
-wget http://download.qt.io/official_releases/qt/5.10/5.10.0/single/qt-everywhere-src-5.10.0.tar.xz
-tar xf qt-everywhere-src-5.10.0.tar.xz
-cd /tmp/qt-everywhere-opensource-src-%VERSION%
-./configure
+wget https://download.qt.io/official_releases/qt/5.9/5.9.5/single/qt-everywhere-opensource-src-5.9.5.tar.xz
+tar xf qt-everywhere-opensource-src-5.9.5.tar.xz
+cd qt-everywhere-opensource-src-5.9.5
+```
+```
 mkdir build && cd build
+./configure -v -release -opensource -confirm-license -no-use-gold-linker -nomake examples -nomake tests -nomake tools -no-cups -no-pch -no-linuxfb -skip qtwayland -opengl es2 -eglfs -system-xcb -system-zlib -device linux-sunxi-g++ -device-option CROSS_COMPILE=arm-linux-gnueabihf- -prefix /opt/qt5.9.5
 make
 make install
 ```
-Install qt5-dependencies
-```
-apt install qt5-default qtwebengine5-dev libqt5webchannel5-dev libqt5x11extras5-dev qtwebengine5-dev qml-module-qtquick-controls qml-module-qtwebengine qml-module-qtwebchannel libqt5sensors5-dev qt[psotopmomg5-dev 
-```
+
 Compile and install plexmediaplayer (pmp)
 ```
 git clone git://github.com/plexinc/plex-media-player
