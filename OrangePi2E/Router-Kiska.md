@@ -6,10 +6,10 @@
 * eth0: HWMac 02:81:c6:e7:c5:62
 * Armbian: headless debian-bases server
 
-# Armbian Stretch
+## Armbian Stretch
 Image can be found at http://www.orangepi.org/downloadresources/.
 
-## Install on SD
+### Install on SD
 Extract the archive
 ```
 7za e Armbian_5.59_Orangepiplus2e_Debian_stretch_next_4.14.65.7z  
@@ -20,7 +20,7 @@ sudo dd if=Armbian_5.59_Orangepiplus2e_Debian_stretch_next_4.14.65.img of=/dev/m
 ```
 Boot the orangepi with the SD card. After login as root (root:1234), follow the initialisation step.
 
-## Initial config:
+### Initial config:
 First, update the system
 ```
 apt update
@@ -40,8 +40,5 @@ And follow the menu to:
 
 Reboot
 
-#
+##
 
-
-
-## 
