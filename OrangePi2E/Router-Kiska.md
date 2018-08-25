@@ -10,9 +10,10 @@
 Image can be found at http://www.orangepi.org/downloadresources/.
 
 ### Install on SD
-Extract the archive
+Download and extract the archive
 ```
-7za e Armbian_5.59_Orangepiplus2e_Debian_stretch_next_4.14.65.7z  
+wget https://dl.armbian.com/orangepiplus2e/Debian_stretch_next.7z
+7za e Debian_stretch_next.7z
 ```
 As root, copy image to SD card and sync
 ```
