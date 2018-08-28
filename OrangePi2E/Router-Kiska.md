@@ -46,6 +46,116 @@ And follow the menu to:
 
 Reboot
 
+
+## Install graphic server with mali kernel driver
+To compile `mali` with `USING_UMP=0`, `libump` and its dependencies `dri2` are needed
+
+### dri2
+Install dependencies
+```
+apt install xutils-dev pkgconf libtool libx11-dev x11proto-dri2-dev libdrm-dev libxext-dev xorg-dev
+```
+Clone, compile and install
+
+```
+git clone https://github.com/robclark/libdri2
+cd libdri2/
+autoreconf -i
+./configure --prefix=/usr
+make && make install
+ldconfig
+cd ..
+```
+
+### libump
+Clone, compile and install
+```
+git clone https://github.com/linux-sunxi/libump
+cd libump/
+autoreconf -i
+./configure --prefix=/usr
+make
+make install
+cd ..
+```
+
+### Mali driver
+Check if `CONFIG_CMA` and `CONFIG_DMA_CMA` are enabled in the kernel with
+```
+grep 'CONFIG_CMA' /boot/config-$(uname -r)
+grep 'CONFIG_DMA_CMA' /boot/config-$(uname -r)
+```
+Install linux sources and headers for the current kernel version. 
+```
+apt install linux-headers-dev-sunxi linux-image-dev-sunxi quilt
+```
+Check if the kernel name between the running kernel (`uname -a`) and the sources are the same  in `/usr/src/linux-source-4.14.18-sunxi/include/generated/utsrelease.h` and '`/usr/src/linux-source-4.14.18-sunxi/include/config/kernel.release`. It should match the kernel version `4.14.18-sunxi`, otherwise modify it to match the running kernel. 
+
+Build the kernel module after applying patch TODO STILL NOT WORKING
+```
+cd ~
+git clone https://github.com/mripard/sunxi-mali.git
+cd sunxi-mali
+./build.sh -r r6p2 -a
+make JOBS=4 USING_UMP=0 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-headers-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- -C r6p2/src/devicedrv/mali
+make JOBS=4 USING_UMP=0 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-headers-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- -C r6p2/src/devicedrv/mali install
+cd ..
+```
+Load the module
+```
+depmod
+modprobe mali
+```
+Copy the blob 
+```
+git clone https://github.com/free-electrons/mali-blobs.git
+cd mali-blobs
+cp -a r6p2/arm/fbdev/lib* /usr/lib
+cp -a r6p2/arm/fbdev/lib* /usr/lib/arm-linux-gnueabihf
+cd ..
+```
+Set permission to mali:
+```
+echo "KERNEL==\"mali\", MODE=\"0660\", GROUP=\"video\"" > /etc/udev/rules.d/50-mali.rules
+```
+
+### Install fbturbo driver 
+
+Build driver
+```
+git clone -b 0.4.0 https://github.com/ssvb/xf86-video-fbturbo.git
+cd xf86-video-fbturbo
+autoreconf -vi
+./configure --prefix=/usr
+make
+make install
+```
+Configure Xorg Server
+```
+cp xorg.conf /etc/X11/xorg.conf.d/99-sunxifbturbo.conf
+cd ..
+```
+
+Check if the correct driver (`FBTURBO`) is loaded in `/var/log/Xorg.0.log` in a X session
+```
+...
+(II) Module fbturbo: vendor="X.Org Foundation"
+   compiled for 1.12.4, module version = 0.4.0
+   Module class: X.Org Video Driver
+   ABI class: X.Org Video Driver, version 12.1
+(II) FBTURBO: driver for framebuffer: fbturbo
+(--) using VT number 7
+...
+```
+Check and es acceleration with
+```
+es2gears
+glxgears
+es2_infos
+glxinfos
+```
+
+
 ## Router configuration
 
 
