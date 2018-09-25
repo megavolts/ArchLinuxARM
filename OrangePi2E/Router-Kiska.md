@@ -43,9 +43,26 @@ And follow the menu to:
 * Software/Headers
 * Software/Full
 
-
 Reboot
 
+## SD card as storage
+Format SD card as f2fs
+```
+mkfs.f2fs /dev/mmcblk0p1 
+mkdir /mnt/data
+```
+Add to mountfs:
+```
+/dev/mmcblk0p1  /mnt/data       f2fs    defaults,nofail,x-systemd.device-timetout=1     0 2
+```
+
+Give write permission to `/mnt/data` to the group users
+```
+usermod -a -G users megavolts
+usermod -a -G users plex
+chown root:users /mnt/data -R
+chmod 775 /mnt/data/ -R
+```
 
 ## Install graphic server with mali kernel driver
 To compile `mali` with `USING_UMP=0`, `libump` and its dependencies `dri2` are needed
@@ -163,15 +180,36 @@ glxinfos
 
 ## Essential packages
 ```
-apt install mlocate
+apt install mlocate tilda
 updatedb
 ```
 
-## Install PMP
+
+## Install PlexMediaServer
+Add the repositories and key, as root:
+```
+wget -O - https://dev2day.de/pms/dev2day-pms.gpg.key | sudo apt-key add -
+echo "deb https://dev2day.de/pms/ stretch main" | sudo tee /etc/apt/sources.list.d/pms.list
+apt-get update
+```
+Install plex and start the service as plex user
+```
+apt-get install plexmediaserver-installer
+service plexmediaserver start
+```
+
+### Remote config
+To set up plex remotely, create a ssh tunnel between the server and the host:
+```
+ssh 137.229.94.163 -L 8888:localhost:32400
+```
+In a webbrowser, configure plex media server at 'localhost:8888/web'
+
+## Install PlexMediaPlayer
 ### Install libdvpau-sunxi
 Install dependencies
 ```
-apt install libpixman-1-dev libvdpau-dev
+apt install libpixman-1-dev libvdpau-dev pkg-config
 ```
 Compile libcedrus
 ```
@@ -214,43 +252,45 @@ cd ..
 ```
 
 ### Compile Qt5.9.5
+Install the following dependencies, for build essentials
 ```
-apt install build-essential libfontconfig1-dev libdbus-1-dev libfreetype6-dev libicu-dev libinput-dev libxkbcommon-dev libsqlite3-dev libssl-dev libpng-dev libjpeg-dev libglib2.0-dev libjpeg-dev libasound2-dev pulseaudio libpulse-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+apt install build-essential perl python git
+```
+For Libxcb
+```
+apt install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev
+```
+For Qt WebKit
+```
+apt install flex bison gperf libicu-dev libxslt-dev ruby
+```
+For Qt WebEngine
+```
+apt install libssl1.0-dev libxcursor-dev libxcomposite-dev libxdamage-dev libxrandr-dev libdbus-1-dev libfontconfig1-dev libcap-dev libxtst-dev libpulse-dev libudev-dev libpci-dev libnss3-dev libasound2-dev libxss-dev libegl1-mesa-dev gperf bison
+```
+For Q Multimedia
+```
+apt install libasound2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+```
+Use `libssl1.0-dev` rather than `libssl-dev` (http://wiki.qt.io/Building_Qt_5_from_Git), and the developpement package of libatspi 2 and libdbus-1
+```
+apt install libssl1.0-dev
 ```
 
-
-# Install PlexMediaServer
-Add the repositories and key, as root:
+Clone and build qt5.9.5:
 ```
-wget -O - https://dev2day.de/pms/dev2day-pms.gpg.key | sudo apt-key add -
-echo "deb https://dev2day.de/pms/ stretch main" | sudo tee /etc/apt/sources.list.d/pms.list
-apt-get update
-```
-Install plex and start the service as plex user
-```
-apt-get install plexmediaserver-installer
-service plexmediaserver start
+git clone git://code.qt.io/qt/qt5.git
+cd qt5
+git checkout v5.9.5
+perl init-repository --module-subset=default,qtwebengine,qtwebsockets,qtwebview
+mkdir build && build
+../configure -v -release -opensource -confirm-license -opengl es2 -eglfs -no-pch -nomake examples -nomake tests -nomake tools -no-cups -skip qtwayland -skip qtquick1 -skip qtlocation -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-sql-psql -no-assimp -no-qt-sdl
+make
+make install
 ```
 
-## Remote config
-To set up plex remotely, create a ssh tunnel between the server and the host:
-```
-ssh 137.229.94.163 -L 8888:localhost:32400
-```
-In a webbrowser, configure plex media server at 'localhost:8888/web'
+### Compile PMP
 
-## Plex users
-Modify plex user home direcotyr
-```
-cp /var/lib/plexmediaserver /home/plex  -R
-chown plex:plex /home/plex -R
-passwd plex <>
-usermod -a -G audio,video,plugdev,systemd-journal,input,ssh plex
-```
-Set `plex` as autologin by default in `nano /etc/default/nodm`
-```
-NODM_USER=plex
-```
 
 ## Firefox optimization
 Install webbrowser and profile sync daemon
@@ -282,24 +322,6 @@ systemctl --user enable psd.service
 Tweak firefox performance according to ArchLinux
 
 
-# SD card as storage
-Format SD card as f2fs
-```
-mkfs.f2fs /dev/mmcblk0p1 
-mkdir /mnt/data
-```
-Add to mountfs:
-```
-/dev/mmcblk0p1  /mnt/data       f2fs    defaults,nofail,x-systemd.device-timetout=1     0 2
-```
-
-Give write permission to `/mnt/data` to the group users
-```
-usermod -a -G users megavolts
-usermod -a -G users plex
-chown root:users /mnt/data -R
-chmod 775 /mnt/data/ -R
-```
 
 # Configure AP/router
 ```
@@ -421,6 +443,32 @@ Save the rules
 ```
 iptables-save > /etc/iptables/iptables.hostapd
 ```
+
+
+### Add a plex users:
+Modify plex user home direcotry
+```
+cp /var/lib/plexmediaserver /home/plex  -R
+chown plex:plex /home/plex -R
+passwd plex <>
+usermod -a -G audio,video,plugdev,systemd-journal,input,ssh plex
+```
+Set `plex` as autologin by default in `nano /etc/default/nodm`
+```
+NODM_USER=plex
+```
+
+Thinger.io
+
+https://github.com/Barryrowe/mongo-arm
+
+
+
+apt install snapd
+sudo snap install thinger-maker-server
+
+sudo service snap.thinger-maker-server.thingerd status
+
 
 ### Source:
 * https://github.com/mripard/sunxi-mali
