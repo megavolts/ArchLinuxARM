@@ -485,7 +485,7 @@ NODM_USER=plex
 ## Install thinger.io instance
 Install dependencies:
 ```
-apt install snapd
+apt install snapd sasl2
 ```
 ### Setup mongodb server
 Clone and copy binaries
@@ -522,7 +522,7 @@ systemctl enable mongodb
 
 ### Install thinger-maker-server
 ```
-snap install thinger-maker-server
+snap install thinger-maker-server 
 ```
 Check the service status
 ```
