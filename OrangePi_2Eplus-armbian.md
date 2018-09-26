@@ -170,11 +170,11 @@ apt install mlocate firefox-esr
 updatedb
 ```
 
-# Media Center
-## Install libdvpau-sunxi
+## Plex Media Player
+### Install libdvpau-sunxi
 Install dependencies
 ```
-apt install libpixman-1-dev libvdpau-dev
+apt install libpixman-1-dev
 ```
 Compile libcedrus
 ```
@@ -196,10 +196,10 @@ cd libvdpau-sunxi
 make
 make install
 ldconfig
-ln -s /usr/lib/arm-linux-gnueabihf/vdpau/libvdpau_sunxi.so.1 /usr/lib/libvdpau_nvidia.so
+# ln -s /usr/lib/arm-linux-gnueabihf/vdpau/libvdpau_sunxi.so.1 /usr/lib/libvdpau_nvidia.so
 cd ..
-``` 
-## Install PlexMediaPlayer
+```
+### Install PlexMediaPlayer
 Install dependencies
 ```
 apt install autoconf automake libtool libharfbuzz-dev libfreetype6-dev libfontconfig1-dev libvdpau-dev libva-dev  yasm libasound2-dev libpulse-dev libuchardet-dev zlib1g-dev libfribidi-dev git libsdl2-dev cmake libgnutls28-dev libgnutls30
@@ -218,7 +218,6 @@ Install Qt5.9.5
 ```
 apt install build-essential libfontconfig1-dev libdbus-1-dev libfreetype6-dev libicu-dev libinput-dev libxkbcommon-dev libsqlite3-dev libssl-dev libpng-dev libjpeg-dev libglib2.0-dev libjpeg-dev libasound2-dev pulseaudio libpulse-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
 ```
-
 
 Download and extract the source for QT5
 ```
@@ -300,34 +299,7 @@ chmod 775 /mnt/data/ -R
 # Source
 * https://diyprojects.io/orange-pi-plus-2e-unpacking-installing-armbian-emmc-memory/
 
-# Install libdvpau-sunxi
-Install dependencies
-```
-apt install libpixman-1-dev
-```
-Compile libcedrus
-```
-git clone https://github.com/linux-sunxi/libcedrus.git
-cd libcedrus
-make
-make install
-cd ..
-```
-Set permission
-```
-echo "KERNEL==\"disp\", MODE=\"0660\", GROUP=\"video\"" > /etc/udev/rules.d/50-disp.rules
-echo "KERNEL==\"cedar\", MODE=\"0660\", GROUP=\"video\"" > /etc/udev/rules.d/50-cedar_dev.rules
-```
-Compile libvdpau-sunxi
-```
-git clone https://github.com/linux-sunxi/libvdpau-sunxi.git
-cd libvdpau-sunxi
-make
-make install
-ldconfig
-# ln -s /usr/lib/arm-linux-gnueabihf/vdpau/libvdpau_sunxi.so.1 /usr/lib/libvdpau_nvidia.so
-cd ..
-```
+
 
 ttf-dejavu 
 ttf-dejavu 
