@@ -174,9 +174,12 @@ glxinfos
 
 ## Essential packages
 ```
-apt install mlocate tilda midori
+apt install mlocate tilda midori tigervnc-standalone-server tigervnc-common
 updatedb
 ```
+### Set up a tigervnc server
+Run `vncserver` and setup a password
+Create 
 
 
 ## Install PlexMediaServer
@@ -191,6 +194,7 @@ Install plex and start the service as plex user
 apt-get install plexmediaserver-installer
 service plexmediaserver start
 ```
+
 
 ### Remote config
 To set up plex remotely, create a ssh tunnel between the server and the host:
@@ -284,6 +288,10 @@ make install
 ```
 
 ### Compile PMP
+If Qt was already compiled, install
+```
+apt install libpcre2-16-0
+```
 Clone, build PMP in a subdir and install
 ```
 git clone git://github.com/plexinc/plex-media-player
@@ -292,7 +300,8 @@ mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Debug -DQTROOT=/usr/local/Qt-5.9.5/ -DCMAKE_INSTALL_PREFIX=/usr/local/ ..
 make -j4
-sudo make install
+make install
+cd ..
 ```
 
 ## Configure AP/router
@@ -462,22 +471,61 @@ Set `plex` as autologin by default in `nano /etc/default/nodm`
 NODM_USER=plex
 ```
 
-Thinger.io
-
-https://github.com/Barryrowe/mongo-arm
-
-
-
+## Install thinger.io instance
+Install dependencies:
+```
 apt install snapd
-sudo snap install thinger-maker-server
+```
+### Setup mongodb server
+Clone and copy binaries
+```
+https://github.com/megavolts/mongo-arm.git
+cp -R binaries/2.1.1 /opt/mongo
+```
+Create a `mongo` user:
+```
+sudo useradd mongo
+sudo passwd mongo
+```
+Change ownership of mongo binareis
+```
+chown -R mongo:mongo /path/to/installed/binaries
+```
+Create database directory own by `mongo`:
+```
+mkdir /data -p
+chown mongo:mongo /data/db
+```
+Setup the service with correct permission
+```
+cp config/mongodb /etc/init.d/mongodb
+cp config/mongod.conf /etc/mongod.conf
+chmod 755 /etc/init.d/mongodb
+```
+Register, start the mongodb service and enable upon success
+```
+update-rc.d mongodb defaults
+systemctl start mongodb
+systemctl enable mongodb
+```
 
-sudo service snap.thinger-maker-server.thingerd status
+### Install thinger-maker-server
+```
+snap install thinger-maker-server
+```
+Check the service status
+```
+service snap.thinger-maker-server.thingerd status
+```
+And log at ip 
+
 
 
 ### Source:
 * https://github.com/mripard/sunxi-mali
 * https://github.com/mripard/sunxi-mali/issues/34
 * http://linux-sunxi.org/Xorg#fbturbo_driver
+* https://github.com/Barryrowe/mongo-arm
 
 
 # Source
