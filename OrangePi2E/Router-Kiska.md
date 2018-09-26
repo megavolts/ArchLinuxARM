@@ -45,7 +45,7 @@ And follow the menu to:
 
 Reboot
 
-## SD card as storage
+### SD card as storage
 Format SD card as f2fs
 ```
 mkfs.f2fs /dev/mmcblk0p1 
@@ -172,15 +172,9 @@ es2_infos
 glxinfos
 ```
 
-
-## Router configuration
-
-
-
-
 ## Essential packages
 ```
-apt install mlocate tilda
+apt install mlocate tilda midori
 updatedb
 ```
 
@@ -290,47 +284,25 @@ make install
 ```
 
 ### Compile PMP
-
-
-## Firefox optimization
-Install webbrowser and profile sync daemon
+Clone, build PMP in a subdir and install
 ```
-apt install firefox-esr profile-sync-daemon
-```
-Run profile-sync-daemon
-```
-psd
-```
-As `megavolts`, enable `firefox` and backup recovery in `home/megavolts/.config/psd/psd.conf`
-```
-USE_OVERLAYFS="yes"
-BROWSERS="firefox"
-USE_BACKUPS="yes"
-BACKUP_LIMIT=5
-```
-Allow `plex` to `run psd-overlay-helper` as `root` without passowrd, modify `/etc/sudoers`:
-```
-megavolts ALL=(ALL) NOPASSWD: /usr/bin/psd-overlay-helper
+git clone git://github.com/plexinc/plex-media-player
+cd plex-media-player
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Debug -DQTROOT=/opt/Qt5.9.5/5.9/gcc_64/ -DCMAKE_INSTALL_PREFIX=/usr/local/ ..
+make -j4
+sudo make install
 ```
 
-Then start and test `'psd`
-```
-systemctl --user start psd.service
-psd p
-systemctl --user enable psd.service
-```
-Tweak firefox performance according to ArchLinux
-
-
-
-# Configure AP/router
+## Configure AP/router
 ```
 apt install hostapd dnsmasq bridge-utils
 ```
-## Network interfaces
+### Network interfaces
 * bridge `br0` between `eth0` and `wlan0`
 * NAT between `usb0` and `br0`
-Edit `/etc/network/interfaces`:
+Edit `/etc/network/interfaces.hotspot`:
 ```
 source /etc/network/interfaces.d/*
 
@@ -361,7 +333,7 @@ iface br0 inet static
         address 10.0.0.1
         netmask 255.255.255.0
 
-pre-up iptables-restore < /etc/iptables.rules.usb0
+post-up iptables-restore < /etc/iptables/iptables.hostapd
         
 ```
 Restart network
@@ -369,7 +341,7 @@ Restart network
 systemctl restart networking
 ```
 
-## Hostpad
+### Hostpad
 Adjust the option in `/etc/hostapd.conf`, especially `ssid` and `wpa_passphrase`:
 ```
 interface=wlan0
@@ -398,7 +370,7 @@ systemctl start hostapd
 systemctl enable hostapd
 ```
 
-## Configure dnsmasq
+### Configure dnsmasq
 Adjust the option in `/etc/dnsmasq.conf`, especially `interface` and `dhcp-range`:
 ```
 # DNS server
@@ -420,7 +392,7 @@ systemctl start dnsmasq
 systemctl enable dnsmasq
 ```
 
-## Enable packet forwarding
+### Enable packet forwarding
 For ipv4:
 ```
 sysctl net.ipv4.ip_forward=1
@@ -432,7 +404,7 @@ net.ipv6.conf.default.forwarding=1
 net.ipv6.conf.all.forwarding=1  
 ```
 
-## Enable NAT:
+### Enable NAT:
 Add the following IP tables rules:
 ```
 iptables -t nat -A POSTROUTING -o usb0 -j MASQUERADE
@@ -441,7 +413,37 @@ iptables -A FORWARD -i br0 -o usb0 -j ACCEPT
 ```
 Save the rules
 ```
+mkdir /etc/iptables
 iptables-save > /etc/iptables/iptables.hostapd
+```
+
+### Create script to switch on/off the AP
+```
+nano -w /etc /switchAP.sh
+#!/bin/bash
+case $1 in:
+   start)
+      cp /etc/network/interfaces.hotspot /ect/network/interfaces
+      systemctl restart networking
+      systemctl restart hostapd
+      systemctl restart dnsmasq
+      ;;
+   stop)
+      cp /etc/network/interfaces.default /ect/network/interfaces
+      systemctl restart networking
+      systemctl stop hostapd
+      systemctl stop dnsmasq
+      ;;
+   restart)
+      systemctl restart networking
+      systemctl restart hostapd
+      systemctl restart dnsmasq
+      ;;
+esac
+```
+Make it executable
+```
+chmod +x /etc/ 
 ```
 
 
