@@ -38,6 +38,7 @@ network={
   pairwise=CCMP
   auth_alg=OPEN
 }
+```
 Unmount:
 ```
 cd
@@ -72,6 +73,24 @@ apt update
 apt upgrade
 ```
 
+## Allow i2c:
+```
+sudo nano /etc/modules
+-----------------------
+i2c-dev
+```
+Then install
+```
+apt install i2c-tools
+adduser pi i2c
+apt install python-smbus 
+
+shutdown -r now
+```
+
+```
+i2c-detect
+
 ### Micropyton
 To build micropython from sources, install dependencies:
 ```
@@ -87,7 +106,19 @@ make axtls
 make
 make install
 ```
+
 ### DHT for micropython
+
+Install packages
+```
+micropython -m upip install micropython-machine
+micropython -m upip install micropython-am2320
+micropython -m upip install micropython-time
+micropython -m upip install micropython-collections
+
+
+
+```
 
 
 
