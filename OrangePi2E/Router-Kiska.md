@@ -275,6 +275,17 @@ Use `libssl1.0-dev` rather than `libssl-dev` (http://wiki.qt.io/Building_Qt_5_fr
 apt install libssl1.0-dev
 ```
 
+Increase amount of swap available
+```
+fallocate -l 3G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+```
+Verify the amount of swap available:
+```
+cat /proc/swaps
+```
 Clone and build qt5.9.5:
 ```
 git clone git://code.qt.io/qt/qt5.git
