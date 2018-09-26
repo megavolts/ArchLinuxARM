@@ -290,7 +290,7 @@ git clone git://github.com/plexinc/plex-media-player
 cd plex-media-player
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Debug -DQTROOT=/opt/Qt5.9.5/5.9/gcc_64/ -DCMAKE_INSTALL_PREFIX=/usr/local/ ..
+cmake -DCMAKE_BUILD_TYPE=Debug -DQTROOT=/usr/local/Qt-5.9.5/ -DCMAKE_INSTALL_PREFIX=/usr/local/ ..
 make -j4
 sudo make install
 ```
@@ -419,7 +419,7 @@ iptables-save > /etc/iptables/iptables.hostapd
 
 ### Create script to switch on/off the AP
 ```
-nano -w /etc /switchAP.sh
+nano -w /usr/bin/switchAP.sh
 #!/bin/bash
 case $1 in:
    start)
@@ -435,15 +435,17 @@ case $1 in:
       systemctl stop dnsmasq
       ;;
    restart)
-      systemctl restart networking
-      systemctl restart hostapd
-      systemctl restart dnsmasq
+      stop
+      start
       ;;
+     *)
+   echo $"Usage: $0 {start|stop|restart}"
+   exit 1
 esac
 ```
 Make it executable
 ```
-chmod +x /etc/ 
+chmod +x /usr/bin/switchAP.sh
 ```
 
 
