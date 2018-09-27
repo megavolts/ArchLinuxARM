@@ -30,7 +30,11 @@ apt update
 apt upgrade
 reboot
 ```
-Run the `armbian-config` utils with:
+Install on EMMC:
+```
+nand-sata-install
+```
+Reboot and un the `armbian-config` utils with:
 ```
 armbian-config
 ```
@@ -46,7 +50,7 @@ And follow the menu to:
 Reboot
 
 ### SD card as storage
-Format SD card as f2fs
+If needed, format SD card as f2fs
 ```
 mkfs.f2fs /dev/mmcblk0p1 
 mkdir /mnt/data
@@ -55,7 +59,6 @@ Add to mountfs:
 ```
 /dev/mmcblk0p1  /mnt/data       f2fs    defaults,nofail,x-systemd.device-timetout=1     0 2
 ```
-
 Give write permission to `/mnt/data` to the group users
 ```
 usermod -a -G users megavolts
