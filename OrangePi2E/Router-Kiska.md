@@ -62,7 +62,6 @@ Add to mountfs:
 Give write permission to `/mnt/data` to the group users
 ```
 usermod -a -G users megavolts
-usermod -a -G users plex
 chown root:users /mnt/data -R
 chmod 775 /mnt/data/ -R
 ```
@@ -177,7 +176,7 @@ glxinfos
 
 ## Essential packages
 ```
-apt install -y mlocate tilda midori tigervnc-standalone-server tigervnc-common
+apt install -y mlocate tilda midori tigervnc-standalone-server tigervnc-common tigervnc-scraping-server
 updatedb
 ```
 ### Set up a tigervnc server
@@ -203,34 +202,37 @@ dpi=96
 localhost
 alwaysshared
 ```
-Create a script to start/stop vncserver `/usr/local/bin/vncserver-cmd`:
+Create a user service script at `/usr/lib/systemd/user/vncserver@.service`:
 ```
-#!/bin/bash
-PATH="$PATH:/usr/bin/"
-DISPLAY="1"
-DEPTH="16"
-GEOMETRY="1024x768"
-OPTIONS="-depth ${DEPTH} -geometry ${GEOMETRY} :${DISPLAY} --localhost"
+# /usr/lib/systemd/user/vncserver@.service
+#
+# 1. Switches for vncserver should be entered in ~/.vnc/config rather than
+#    hard-coded into this unit file. See the vncserver(1) manpage.
+#
+# 2. Users wishing for the server to continue running after the owner logs
+#    out MUST enable 'linger' with loginctl like this:
+#    `loginctl enable-linger username`
+#    
+# 3. The server can be enabled and started like this once configured:
+#    `systemctl --user start vncserver@:<display>.service`
+#    `systemctl --user enable vncserver@:<display>.service`
 
-case "$1" in
-start)
-/usr/bin/vncserver ${OPTIONS}
-;;
+[Unit]
+Description=Remote desktop service (VNC)
+After=syslog.target network.target
 
-stop)
-/usr/bin/vncserver -kill :${DISPLAY}
-;;
+[Service]
+Type=forking
+ExecStartPre=/bin/bash -c '/usr/bin/vncserver -kill %i > /dev/null 2>&1 || :'
+ExecStart=/usr/bin/vncserver %i
+ExecStop=/usr/bin/vncserver -kill %i
 
-restart)
-$0 stop
-$0 start
-;;
-esac
-exit 0
+[Install]
+WantedBy=default.target
 ```
-Make it executable
+Start the service:
 ```
-chmod +x /usr/local/bin/vncserver-cmd
+systemctl --user start vncserver@:1.service
 ```
 Make sure the vncserver does not stop after you disconnect:
 ```
@@ -245,6 +247,32 @@ And then log into vnc
 vncviewer localhost:5901
 ```
 TODO keep the session alive
+
+### x0vncserver
+User x0vncserver to get remote access to the current desktop runnin on the host.
+
+Create a system service script at `/etc/systemd/system/x0vncserver.service`:
+```
+[Unit]
+Description=Remote desktop service (VNC)
+After=syslog.target network.target
+
+[Service]
+Type=forking
+User=megavolts
+ExecStart=/bin/bash -c '/usr/bin/x0vncserver -display :0 -rfbport 5900 -passwordfile /home/megavolts/.vnc/passwd &'
+
+[Install]
+WantedBy=multi-user.target
+```
+Start the service on demand:
+```
+systemctl start x0vncserver
+```
+And then take control via
+```
+vncviewer IP:0
+```
 
 ## Install PlexMediaServer
 Add the repositories and key, as root:
@@ -262,7 +290,7 @@ service plexmediaserver enable
 ### Remote config
 To set up plex remotely, create a ssh tunnel between the server and the host:
 ```
-ssh 137.229.94.163 -L 8888:localhost:32400
+ssh IP -L 8888:localhost:32400
 ```
 In a webbrowser, configure plex media server at 'localhost:8888/web'
 
