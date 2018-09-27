@@ -577,12 +577,13 @@ NODM_USER=plex
 ## Install thinger.io instance
 Install dependencies:
 ```
-apt install snapd sasl2
+apt install snapd sasl2-bin libsasl2-2
 ```
 ### Setup mongodb server
 Clone and copy binaries
 ```
-https://github.com/megavolts/mongo-arm.git
+git clone https://github.com/megavolts/mongo-arm.git
+cd /mongo-arm
 cp -R binaries/2.1.1 /opt/mongo
 ```
 Create a `mongo` user:
@@ -592,12 +593,12 @@ sudo passwd mongo
 ```
 Change ownership of mongo binareis
 ```
-chown -R mongo:mongo /path/to/installed/binaries
+chown -R mongo:mongo /opt/mongo
 ```
 Create database directory own by `mongo`:
 ```
-mkdir /data -p
-chown mongo:mongo /data/db
+mkdir /mnt/data/mongo-db -p
+chown mongo:mongo /mnt/data/mongo-db
 ```
 Setup the service with correct permission
 ```
@@ -620,7 +621,7 @@ Check the service status
 ```
 service snap.thinger-maker-server.thingerd status
 ```
-And log at ip 
+And log at localhost via a webbroswer
 
 
 
