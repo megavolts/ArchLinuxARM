@@ -73,7 +73,7 @@ To compile `mali` with `USING_UMP=0`, `libump` and its dependencies `dri2` are n
 ### dri2
 Install dependencies
 ```
-apt install xutils-dev pkgconf libtool libx11-dev x11proto-dri2-dev libdrm-dev libxext-dev xorg-dev
+apt install xutils-dev pkgconf libtool libx11-dev x11proto-dri2-dev libdrm-dev libxext-dev xorg-dev mesa-utils mesa-utils-extra
 ```
 Clone, compile and install
 
@@ -107,7 +107,7 @@ grep 'CONFIG_DMA_CMA' /boot/config-$(uname -r)
 ```
 Install linux sources and headers for the current kernel version. 
 ```
-apt install linux-headers-dev-sunxi linux-image-dev-sunxi quilt
+apt install linux-headers-next-sunxi linux-image-next-sunxi quilt
 ```
 Check if the kernel name between the running kernel (`uname -a`) and the sources are the same  in `/usr/src/linux-source-4.14.18-sunxi/include/generated/utsrelease.h` and '`/usr/src/linux-source-4.14.18-sunxi/include/config/kernel.release`. It should match the kernel version `4.14.18-sunxi`, otherwise modify it to match the running kernel. 
 
@@ -117,8 +117,8 @@ cd ~
 git clone https://github.com/mripard/sunxi-mali.git
 cd sunxi-mali
 ./build.sh -r r6p2 -a
-make JOBS=4 USING_UMP=0 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-headers-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- -C r6p2/src/devicedrv/mali
-make JOBS=4 USING_UMP=0 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-headers-4.14.18-sunxi CROSS_COMPILE=arm-linux-gnueabihf- -C r6p2/src/devicedrv/mali install
+make JOBS=4 USING_UMP=0 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-headers-$(uname -r) CROSS_COMPILE=arm-linux-gnueabihf- -C r6p2/src/devicedrv/mali
+make JOBS=4 USING_UMP=0 BUILD=release USING_PROFILING=0 MALI_PLATFORM=sunxi USING_DVFS=1 USING_DEVFREQ=1 KDIR=/usr/src/linux-headers-$(uname -r) CROSS_COMPILE=arm-linux-gnueabihf- -C r6p2/src/devicedrv/mali install
 cd ..
 ```
 Load the module
@@ -177,13 +177,74 @@ glxinfos
 
 ## Essential packages
 ```
-apt install mlocate tilda midori tigervnc-standalone-server tigervnc-common
+apt install -y mlocate tilda midori tigervnc-standalone-server tigervnc-common
 updatedb
 ```
 ### Set up a tigervnc server
 Run `vncserver` and setup a password
-Create 
 
+~/.vnc/xstartup
+```
+#!/bin/sh
+unset SESSION_MANAGER
+unset DBUS_SESSION_BUS_ADDRESS
+exec startxfce4
+```
+Make sure ~/.vnc/xstartup has a execute permission:
+```
+chmod u+x ~/.vnc/xstartup
+```
+Edit the optional config file `~/.vnc/config`:
+```
+securitytypes=tlsvnc
+desktop=sandbox
+geometry=1200x700
+dpi=96
+localhost
+alwaysshared
+```
+Create a script to start/stop vncserver `/usr/local/bin/vncserver-cmd`:
+```
+#!/bin/bash
+PATH="$PATH:/usr/bin/"
+DISPLAY="1"
+DEPTH="16"
+GEOMETRY="1024x768"
+OPTIONS="-depth ${DEPTH} -geometry ${GEOMETRY} :${DISPLAY} --localhost"
+
+case "$1" in
+start)
+/usr/bin/vncserver ${OPTIONS}
+;;
+
+stop)
+/usr/bin/vncserver -kill :${DISPLAY}
+;;
+
+restart)
+$0 stop
+$0 start
+;;
+esac
+exit 0
+```
+Make it executable
+```
+chmod +x /usr/local/bin/vncserver-cmd
+```
+Make sure the vncserver does not stop after you disconnect:
+```
+loginctl enable-linger megavolts
+```
+To log in remotly via ssh
+```
+ssh megavolts@10.25.166.154 -L 5901:localhost:5901
+```
+And then log into vnc
+```
+vncviewer localhost:5901
+```
+TODO keep the session alive
 
 ## Install PlexMediaServer
 Add the repositories and key, as root:
@@ -196,9 +257,8 @@ Install plex and start the service as plex user
 ```
 apt-get install plexmediaserver-installer
 service plexmediaserver start
+service plexmediaserver enable
 ```
-
-
 ### Remote config
 To set up plex remotely, create a ssh tunnel between the server and the host:
 ```
