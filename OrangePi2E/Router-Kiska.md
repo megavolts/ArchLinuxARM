@@ -361,9 +361,9 @@ For Q Multimedia
 ```
 apt install libasound2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
 ```
-Use `libssl1.0-dev` rather than `libssl-dev` (http://wiki.qt.io/Building_Qt_5_from_Git), and the developpement package of libatspi 2 and libdbus-1
+Use `libssl1.0-dev` rather than `libssl-dev` (http://wiki.qt.io/Building_Qt_5_from_Git), and the developpement package of libatspi2.0 and libdbus-1
 ```
-apt install libssl1.0-dev
+apt install libssl1.0-dev libatspi2.0-dev libdbus-1-dev
 ```
 
 Increase amount of swap available
@@ -379,6 +379,7 @@ cat /proc/swaps
 ```
 Clone and build qt5.9.5:
 ```
+cd /mnt/data
 git clone git://code.qt.io/qt/qt5.git
 cd qt5
 git checkout v5.9.5
