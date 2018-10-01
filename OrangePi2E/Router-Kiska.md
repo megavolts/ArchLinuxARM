@@ -377,13 +377,15 @@ Verify the amount of swap available:
 ```
 cat /proc/swaps
 ```
-Clone and build qt5.9.5:
+Clone and build qt5.10:
+We build PMP against qt5.10 instead of qt5.9.5
 ```
 cd /mnt/data
 git clone git://code.qt.io/qt/qt5.git
 cd qt5
-git checkout v5.9.5
+git checkout v5.10.0
 perl init-repository --module-subset=default,qtwebengine,qtwebsockets,qtwebview
+git submodule update --init
 mkdir build && build
 ../configure -v -release -opensource -confirm-license -opengl es2 -eglfs -no-pch -nomake examples -nomake tests -nomake tools -no-cups -skip qtwayland -skip qtquick1 -skip qtlocation -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-sql-psql -no-assimp -no-qt-sdl
 make
