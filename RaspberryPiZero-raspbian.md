@@ -28,7 +28,7 @@ allow-hotplug wlan0
 iface wlan0 inet dhcp
     wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
 ```
-Modifiy '/etc/wpa_supplicant/wpa_supplicant.conf:
+Modifiy `etc/wpa_supplicant/wpa_supplicant.conf`:
 ```
 network={
   ssid="RedTrim"
@@ -48,7 +48,7 @@ umount /mnt/armbian
 #### Enable `ssh`
 To enable `ssh` add an empty file named ssh in the boot directory
 ```
-mount /etc/mmcblk0p1 /mnt/armbian
+mount /dev/mmcblk0p1 /mnt/armbian
 touch /mnt/armbian/ssh
 umount /mnt/armbian
 ```
@@ -56,7 +56,7 @@ umount /mnt/armbian
 Boot the RaspberryPi Zero after setting up the SD card and log via ssh.
 
 ## Set up the Raspberry Pi:
-To find the IP of the RaspberryPi, use nmap and remotely log via ssh (pi:password:
+To find the IP of the RaspberryPi, use nmap and remotely log via ssh (pi:raspberry
 ```
 nmap -p22 -sV 192.168.0.0/24
 ssh pi@10.42.0.91
