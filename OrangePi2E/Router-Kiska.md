@@ -176,7 +176,7 @@ glxinfos
 
 ## Essential packages
 ```
-apt install -y mlocate tilda midori tigervnc-standalone-server tigervnc-common tigervnc-scraping-server
+apt install -y mlocate tilda midori tigervnc-standalone-server tigervnc-common tigervnc-scraping-server nmap
 updatedb
 ```
 ### Set up a tigervnc server
