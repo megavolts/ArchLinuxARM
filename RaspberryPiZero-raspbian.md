@@ -73,23 +73,44 @@ apt update
 apt upgrade
 ```
 
-## Allow i2c:
+## Configuring i2c:
+To load i2c module at start, edit `/etc/modules`
 ```
-sudo nano /etc/modules
------------------------
 i2c-dev
+```
+Add `rtc-ds1307` for the DS3231 RTC clock
+
+Modify baudrate of i2c in `/boot/config.txt`
+```
+#i2c, baudrate
+dtparam=i2c_arm=on,i2c_baudrate=400000
+```
+Add user to `ic2` group with
+```
+adduser pi i2c
 ```
 Then install
 ```
 apt install i2c-tools
-adduser pi i2c
 apt install python-smbus 
-
 shutdown -r now
 ```
+To detect i2c devices, run:
+```
+i2cdetect -y 1
+i2cdetect -y 0
+```
+### BME 280, temperature, humidity, pressure sensor
 
 ```
-i2c-detect
+apt install python3-pip
+pip3 install RPi.bme280
+```
+
+### DS3231 RTC
+
+
+
 
 ### Micropyton
 To build micropython from sources, install dependencies:
