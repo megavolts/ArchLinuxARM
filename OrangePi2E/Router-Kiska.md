@@ -377,20 +377,24 @@ Verify the amount of swap available:
 ```
 cat /proc/swaps
 ```
-Clone and build qt5.10:
-We build PMP against qt5.10 instead of qt5.9.5
+Clone and build qt5.9.5
 ```
 cd /mnt/data
 git clone git://code.qt.io/qt/qt5.git
 cd qt5
-git checkout v5.10.0
+git checkout v5.9.5
 perl init-repository --module-subset=default,qtwebengine,qtwebsockets,qtwebview
 git submodule update --init
-mkdir build && build
-../configure -v -release -opensource -confirm-license -opengl es2 -eglfs -no-pch -nomake examples -nomake tests -nomake tools -no-cups -skip qtwayland -skip qtquick1 -skip qtlocation -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-sql-psql -no-assimp -no-qt-sdl
-make
-make install
+mkdir build && cd build
+../configure -v -release -opensource -confirm-license -opengl es2 -eglfs -no-pch -nomake examples -nomake tests -nomake tools -no-cups -skip qtwayland -skip qtquick1 -skip qtlocation -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-sql-psql -no-assimp -no-system-sdl -system-zlib -system-xcb -system-freetype -system-xkb-common -system-libjpeg -system-pcre -system-harfbuzz -no-use-gold-linker -system-ffmpeg
+
+../configure -v -release -opensource -confirm-license -opengl es2 -eglfs -no-pch -nomake examples -nomake tests -nomake tools -no-cups -skip qtwayland -skip qtquick1 -skip qtlocation -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-sql-psql -no-assimp -no-qt-sdl -qt-zlib -qt-xcb -qt-freetype -qt-xkb-common -qt-libjpeg -qt-pcre -qt-harfbuzz -no-use-gold-linker -system-ffmpeg
+make -j4
+make install 4-
 ```
+
+#### If failed:
+Before configuring, enable system-opus and system-ffmpeg in `qt5/build/qtwebengine/qtwebengine-config.pri` to enable system-opus
 
 ### Compile PMP
 If Qt was already compiled, install
@@ -404,6 +408,7 @@ cd plex-media-player
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Debug -DQTROOT=/usr/local/Qt-5.9.5/ -DCMAKE_INSTALL_PREFIX=/usr/local/ ..
+export CMAKE_PREFIX_PATH+=/mnt/data/qt5.9/qt5/build/qtwebengine/lib/cmake/Qt5WebEngine/
 make -j4
 make install
 cd ..
