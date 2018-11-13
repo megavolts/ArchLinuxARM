@@ -108,7 +108,7 @@ Install linux sources and headers for the current kernel version.
 ```
 apt install linux-headers-next-sunxi linux-image-next-sunxi quilt
 ```
-Check if the kernel name between the running kernel (`uname -a`) and the sources are the same  in `/usr/src/linux-source-4.14.18-sunxi/include/generated/utsrelease.h` and '`/usr/src/linux-source-4.14.18-sunxi/include/config/kernel.release`. It should match the kernel version `4.14.18-sunxi`, otherwise modify it to match the running kernel. 
+Check if the kernel name between the running kernel (`uname -a`) and the sources are the same  in `/usr/src/linux-source-$(uname -r)/include/generated/utsrelease.h` and '`/usr/src/linux-source-$(uname -r)/include/config/kernel.release`. It should match the kernel version `4.14.18-sunxi`, otherwise modify it to match the running kernel. 
 
 Build the kernel module after applying patch TODO STILL NOT WORKING
 ```
