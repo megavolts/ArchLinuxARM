@@ -24,15 +24,12 @@ Boot the orangepi with the SD card.
 ### Initial config:
 After login as root (root:1234), follow the initialisation step.
 
-First, update the system
+### Update the system to buster:
+Update the system
 ```
 apt update
 apt upgrade
 reboot
-```
-Install on EMMC:
-```
-nand-sata-install
 ```
 Reboot and un the `armbian-config` utils with:
 ```
@@ -41,29 +38,21 @@ armbian-config
 And follow the menu to:
 * System/Update firmware
 * System/SSH: set `PermitRootLogin` to `no`
+* System/ZSH
 * System/minimal desktop
 * Personal/Timezone: America/Anchorage
 * Personal/Hostaneme: kiska
 * Software/Headers
 * Software/Full
 
-Reboot
+### Upgrade the sytem to buster
+Update repository sources from stretch to buster in `/etc/apt/sources.list`.
 
-### SD card as storage
-If needed, format SD card as f2fs
+Comment out the `stretch-backports` repository and update
 ```
-mkfs.f2fs /dev/mmcblk0p1 
-mkdir /mnt/data
-```
-Add to mountfs:
-```
-/dev/mmcblk0p1  /mnt/data       f2fs    defaults,nofail,x-systemd.device-timetout=1     0 2
-```
-Give write permission to `/mnt/data` to the group users
-```
-usermod -a -G users megavolts
-chown root:users /mnt/data -R
-chmod 775 /mnt/data/ -R
+apt update
+apt upgrade
+reboot
 ```
 
 ## Install graphic server with mali kernel driver
@@ -72,7 +61,7 @@ To compile `mali` with `USING_UMP=0`, `libump` and its dependencies `dri2` are n
 ### dri2
 Install dependencies
 ```
-apt install xutils-dev pkgconf libtool libx11-dev x11proto-dri2-dev libdrm-dev libxext-dev xorg-dev mesa-utils mesa-utils-extra
+apt install -y xutils-dev pkgconf libtool libx11-dev x11proto-dri2-dev libdrm-dev libxext-dev xorg-dev mesa-utils mesa-utils-extra
 ```
 Clone, compile and install
 
@@ -106,7 +95,7 @@ grep 'CONFIG_DMA_CMA' /boot/config-$(uname -r)
 ```
 Install linux sources and headers for the current kernel version. 
 ```
-apt install linux-headers-next-sunxi linux-image-next-sunxi quilt
+apt install -y linux-headers-next-sunxi linux-image-next-sunxi quilt
 ```
 Check if the kernel name between the running kernel (`uname -a`) and the sources are the same  in `/usr/src/linux-source-$(uname -r)/include/generated/utsrelease.h` and '`/usr/src/linux-source-$(uname -r)/include/config/kernel.release`. It should match the kernel version `4.14.18-sunxi`, otherwise modify it to match the running kernel. 
 
@@ -155,6 +144,16 @@ cp xorg.conf /etc/X11/xorg.conf.d/99-sunxifbturbo.conf
 cd ..
 ```
 
+### Install ther xerver
+Install XFCE
+```
+apt install xfce4
+```
+Install input driver
+```
+apt install  xserver-xorg-input-all xterm
+```
+
 Check if the correct driver (`FBTURBO`) is loaded in `/var/log/Xorg.0.log` in a X session
 ```
 ...
@@ -174,14 +173,37 @@ es2_infos
 glxinfos
 ```
 
+
+### Install to EMMC
+Copy SD to EMMC, with
+```
+nand-sata-install
+```
+Use SD as storage. Format SD card as f2fs
+```
+mkfs.f2fs /dev/mmcblk0p1 
+mkdir /mnt/data
+```
+Add to mountfs:
+```
+/dev/mmcblk0p1  /mnt/data       f2fs    defaults,nofail,x-systemd.device-timetout=1     0 2
+```
+Give write permission to `/mnt/data` to the group users
+```
+usermod -a -G users megavolts
+chown root:users /mnt/data -R
+chmod 775 /mnt/data/ -R
+```
+
+
 ## Essential packages
 ```
 apt install -y mlocate tilda midori tigervnc-standalone-server tigervnc-common tigervnc-scraping-server nmap
 updatedb
 ```
+
 ### Set up a tigervnc server
 Run `vncserver` and setup a password
-
 ~/.vnc/xstartup
 ```
 #!/bin/sh
@@ -236,7 +258,7 @@ systemctl --user start vncserver@:1.service
 ```
 Make sure the vncserver does not stop after you disconnect:
 ```
-loginctl enable-linger megavolts
+loginctl enable-linger kiska
 ```
 To log in remotly via ssh
 ```
@@ -259,8 +281,8 @@ After=syslog.target network.target
 
 [Service]
 Type=forking
-User=megavolts
-ExecStart=/bin/bash -c '/usr/bin/x0vncserver -display :0 -rfbport 5900 -passwordfile /home/megavolts/.vnc/passwd &'
+User=kiska
+ExecStart=/bin/bash -c '/usr/bin/x0vncserver -display :0 -rfbport 5900 -passwordfile /home/kiska/.vnc/passwd &'
 
 [Install]
 WantedBy=multi-user.target
@@ -273,12 +295,18 @@ And then take control via
 ```
 vncviewer IP:0
 ```
+Enable audio, with pulsaudio
+```
+apt install -y pulseaudio pulseaudio-dlna pulseaudio-module-bluetooth pulseaudio-equalizer pulseaudio-module-jack pulseaudio-zero
+apt install -y xfce4-pulseaudio-plugin pavuontrol paprefs pavumeter pulseaudio-module-zeroconf pamix pasystray
+pulseuadio -D
+```
 
 ## Install PlexMediaServer
 Add the repositories and key, as root:
 ```
 wget -O - https://dev2day.de/pms/dev2day-pms.gpg.key | sudo apt-key add -
-echo "deb https://dev2day.de/pms/ stretch main" | sudo tee /etc/apt/sources.list.d/pms.list
+echo "deb https://dev2day.de/pms/ buster main" | sudo tee /etc/apt/sources.list.d/pms.list
 apt-get update
 ```
 Install plex and start the service as plex user
@@ -298,7 +326,7 @@ In a webbrowser, configure plex media server at 'localhost:8888/web'
 ### Install libdvpau-sunxi
 Install dependencies
 ```
-apt install libpixman-1-dev libvdpau-dev pkg-config
+apt install -y libpixman-1-dev libvdpau-dev pkg-config
 ```
 Compile libcedrus
 ```
@@ -327,7 +355,7 @@ cd ..
 ### Compile mpv
 Install dependencies
 ```
-apt install autoconf automake libtool libharfbuzz-dev libfreetype6-dev libfontconfig1-dev libvdpau-dev libva-dev  yasm libasound2-dev libpulse-dev libuchardet-dev zlib1g-dev libfribidi-dev git libsdl2-dev cmake libgnutls28-dev libgnutls30
+apt install -y autoconf automake libtool libharfbuzz-dev libfreetype6-dev libfontconfig1-dev libvdpau-dev libva-dev  yasm libasound2-dev libpulse-dev libuchardet-dev zlib1g-dev libfribidi-dev git libsdl2-dev cmake libgnutls28-dev libgnutls30
 ```
 Compile `mpv` with `ffmpeg`
 ```
@@ -340,83 +368,29 @@ ldconfig
 cd ..
 ```
 
-### Compile Qt5.9.5
+### Install Qt>5.11.1
 Install the following dependencies, for build essentials
 ```
-apt install build-essential perl python git
+apt install -y qtwebengine5-dev qml-module-qtwebengine libqt5x11extras5-dev qml-module-qtwebchannel qml-module-qtquick-controlsplex
 ```
-For Libxcb
-```
-apt install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev
-```
-For Qt WebKit
-```
-apt install flex bison gperf libicu-dev libxslt-dev ruby
-```
-For Qt WebEngine
-```
-apt install libssl1.0-dev libxcursor-dev libxcomposite-dev libxdamage-dev libxrandr-dev libdbus-1-dev libfontconfig1-dev libcap-dev libxtst-dev libpulse-dev libudev-dev libpci-dev libnss3-dev libasound2-dev libxss-dev libegl1-mesa-dev gperf bison
-```
-For Q Multimedia
-```
-apt install libasound2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
-```
-Use `libssl1.0-dev` rather than `libssl-dev` (http://wiki.qt.io/Building_Qt_5_from_Git), and the developpement package of libatspi2.0 and libdbus-1
-```
-apt install libssl1.0-dev libatspi2.0-dev libdbus-1-dev
-```
-
-Increase amount of swap available
-```
-fallocate -l 3G /swapfile
-chmod 600 /swapfile
-mkswap /swapfile
-swapon /swapfile
-```
-Verify the amount of swap available:
-```
-cat /proc/swaps
-```
-Clone and build qt5.9.5
-```
-cd /mnt/data
-git clone git://code.qt.io/qt/qt5.git
-cd qt5
-git checkout v5.9.5
-perl init-repository --module-subset=default,qtwebengine,qtwebsockets,qtwebview
-git submodule update --init
-mkdir build && cd build
-../configure -v -release -opensource -confirm-license -opengl es2 -eglfs -no-pch -nomake examples -nomake tests -nomake tools -no-cups -skip qtwayland -skip qtquick1 -skip qtlocation -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-sql-psql -no-assimp -no-system-sdl -system-zlib -system-xcb -system-freetype -system-xkb-common -system-libjpeg -system-pcre -system-harfbuzz -no-use-gold-linker -system-ffmpeg
-
-../configure -v -release -opensource -confirm-license -opengl es2 -eglfs -no-pch -nomake examples -nomake tests -nomake tools -no-cups -skip qtwayland -skip qtquick1 -skip qtlocation -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-sql-psql -no-assimp -no-qt-sdl -qt-zlib -qt-xcb -qt-freetype -qt-xkb-common -qt-libjpeg -qt-pcre -qt-harfbuzz -no-use-gold-linker -system-ffmpeg
-make -j4
-make install 4-
-```
-
-#### If failed:
-Before configuring, enable system-opus and system-ffmpeg in `qt5/build/qtwebengine/qtwebengine-config.pri` to enable system-opus
 
 ### Compile PMP
-If Qt was already compiled, install
-```
-apt install libpcre2-16-0
-```
 Clone, build PMP in a subdir and install
 ```
 git clone git://github.com/plexinc/plex-media-player
 cd plex-media-player
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Debug -DQTROOT=/usr/local/Qt-5.9.5/ -DCMAKE_INSTALL_PREFIX=/usr/local/ ..
-export CMAKE_PREFIX_PATH+=/mnt/data/qt5.9/qt5/build/qtwebengine/lib/cmake/Qt5WebEngine/
+cmake -DCMAKE_BUILD_TYPE=Debug -DQTROOT=/usr/bin/ -DCMAKE_INSTALL_PREFIX=/usr/local/ ..
 make -j4
 make install
 cd ..
 ```
 
+
 ## Configure AP/router
 ```
-apt install hostapd dnsmasq bridge-utils
+apt install -y hostapd dnsmasq bridge-utils
 ```
 ### Network interfaces
 * bridge `br0` between `eth0` and `wlan0`
@@ -457,7 +431,9 @@ post-up iptables-restore < /etc/iptables/iptables.hostapd
 ```
 Restart network
 ```
-systemctl restart networking
+systemctl stop NetworkManager
+systemctl start networking
+systemctl enable networking
 ```
 
 ### Hostpad
@@ -529,6 +505,8 @@ Add the following IP tables rules:
 iptables -t nat -A POSTROUTING -o usb0 -j MASQUERADE
 iptables -A FORWARD -o usb0 -i br0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 iptables -A FORWARD -i br0 -o usb0 -j ACCEPT
+iptables -A FORWARD -o eth0 -i br0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i br0 -o eth0 -j ACCEPT
 ```
 Save the rules
 ```
@@ -542,14 +520,16 @@ nano -w /usr/bin/switchAP.sh
 #!/bin/bash
 case $1 in:
    start)
-      cp /etc/network/interfaces.hotspot /ect/network/interfaces
-      systemctl restart networking
+      cp /etc/network/interfaces.hotspot /etc/network/interfaces
+      systemctl stop NetworkManager
+      systemctl start networking
       systemctl restart hostapd
       systemctl restart dnsmasq
       ;;
    stop)
       cp /etc/network/interfaces.default /ect/network/interfaces
-      systemctl restart networking
+      systemctl stop networking
+      systemctl start NetworkManager
       systemctl stop hostapd
       systemctl stop dnsmasq
       ;;
@@ -567,76 +547,10 @@ Make it executable
 chmod +x /usr/bin/switchAP.sh
 ```
 
-
-### Add a plex users:
-Modify plex user home direcotry
-```
-cp /var/lib/plexmediaserver /home/plex  -R
-chown plex:plex /home/plex -R
-passwd plex <>
-usermod -a -G audio,video,plugdev,systemd-journal,input,ssh plex
-```
-Set `plex` as autologin by default in `nano /etc/default/nodm`
-```
-NODM_USER=plex
-```
-
-## Install thinger.io instance
-Install dependencies:
-```
-apt install snapd sasl2-bin libsasl2-2
-```
-### Setup mongodb server
-Clone and copy binaries
-```
-git clone https://github.com/megavolts/mongo-arm.git
-cd /mongo-arm
-cp -R binaries/2.1.1 /opt/mongo
-```
-Create a `mongo` user:
-```
-sudo useradd mongo
-sudo passwd mongo
-```
-Change ownership of mongo binareis
-```
-chown -R mongo:mongo /opt/mongo
-```
-Create database directory own by `mongo`:
-```
-mkdir /mnt/data/mongo-db -p
-chown mongo:mongo /mnt/data/mongo-db
-```
-Setup the service with correct permission
-```
-cp config/mongodb /etc/init.d/mongodb
-cp config/mongod.conf /etc/mongod.conf
-chmod 755 /etc/init.d/mongodb
-```
-Register, start the mongodb service and enable upon success
-```
-update-rc.d mongodb defaults
-systemctl start mongodb
-systemctl enable mongodb
-```
-
-### Install thinger-maker-server
-```
-snap install thinger-maker-server 
-```
-Check the service status
-```
-service snap.thinger-maker-server.thingerd status
-```
-And log at localhost via a webbroswer
-
-
-
 ### Source:
 * https://github.com/mripard/sunxi-mali
 * https://github.com/mripard/sunxi-mali/issues/34
 * http://linux-sunxi.org/Xorg#fbturbo_driver
-* https://github.com/Barryrowe/mongo-arm
 
 
 # Source
