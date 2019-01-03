@@ -3,7 +3,7 @@
 ## Installation
 ### Create a new user hass:
 ```
-useradd -m -g users -G audio,lp -s /bin/zsh hass
+useradd -m -g users -G audio,lp,dialout,gpio -s /bin/zsh hass
 passwd homeassistant << EOF
 $PASSWORD
 $PASSWORD
@@ -50,7 +50,6 @@ systemctl enable home-assistant@hass
 
 ```
 Check in webserver at http://IP:8123
-```
 
 ## Configuration
 ### MQTT broker
@@ -62,12 +61,13 @@ Check the service status with
 ```
 service mosquitto status
 ```
-Modifiy the home-assistant serverc with adding:
+Modifiy the home-assistant service with adding:
 `
 ...
 [Unit]
-After=.service
-
+After=network.target mosquitto.service
+...
+```
 
 
 
